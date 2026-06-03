@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>一等学科試験 暗記マスター</title>
+<meta name="description" content="一等無人航空機操縦士 学科試験の暗記アプリ（教則第4版準拠・必勝計算5公式）">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="一等学科">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Bebas+Neue&display=swap');
+
+  :root{
+    --bg:#0a0e1a;
+    --panel:#121829;
+    --panel2:#1a2238;
+    --line:#26304d;
+    --ink:#e8ecf6;
+    --sub:#8b97b8;
+    --acc:#3dd6c4;
+    --acc2:#ffb627;
+    --bad:#ff5d6c;
+    --good:#3ddc84;
+    --hot:#ff7a45;
+    --shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(61,214,196,.10), transparent 60%),
+      radial-gradient(1000px 500px at -10% 110%, rgba(255,182,39,.07), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    overflow:hidden;
+    height:100dvh;
+    display:flex;flex-direction:column;
+  }
+  #app{flex:1;display:flex;flex-direction:column;max-width:480px;width:100%;margin:0 auto;overflow:hidden;position:relative}
+
+  /* ---------- Header ---------- */
+  header{
+    padding:16px 18px 12px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(18,24,41,.9),rgba(18,24,41,.4));
+    backdrop-filter:blur(8px);
+    position:relative;z-index:5;
+  }
+  .h-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg,var(--acc),#2a9d8f);
+    display:grid;place-items:center;font-weight:900;color:#04141a;font-size:18px;
+    box-shadow:0 4px 14px rgba(61,214,196,.4);
+  }
+  .logo h1{font-size:15px;font-weight:900;letter-spacing:.02em;line-height:1.15}
+  .logo .sub{font-size:10.5px;color:var(--sub);font-weight:500;margin-top:1px}
+  .streak{
+    font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--acc2);
+    border:1px solid rgba(255,182,39,.35);border-radius:20px;padding:4px 11px;
+    display:flex;align-items:center;gap:5px;letter-spacing:.06em;
+  }
+  .progbar{height:5px;background:var(--panel2);border-radius:4px;margin-top:12px;overflow:hidden}
+  .progbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px;width:0;transition:width .5s cubic-bezier(.4,0,.2,1)}
+  .prog-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-top:6px;font-weight:500}
+
+  /* ---------- Scroll body ---------- */
+  main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px 90px}
+  main::-webkit-scrollbar{width:0}
+
+  .screen{animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- Home cat cards ---------- */
+  .sec-title{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.08em;margin:6px 2px 12px;text-transform:uppercase}
+  .cat{
+    background:linear-gradient(135deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;
+    position:relative;overflow:hidden;cursor:pointer;transition:transform .15s, border-color .15s;
+  }
+  .cat:active{transform:scale(.985)}
+  .cat .row{display:flex;align-items:center;gap:13px}
+  .cat .ic{
+    width:46px;height:46px;border-radius:13px;flex:none;display:grid;place-items:center;font-size:22px;
+    background:rgba(61,214,196,.12);border:1px solid rgba(61,214,196,.25);
+  }
+  .cat.c1 .ic{background:rgba(255,93,108,.12);border-color:rgba(255,93,108,.3)}
+  .cat.c2 .ic{background:rgba(61,214,196,.12);border-color:rgba(61,214,196,.3)}
+  .cat.c3 .ic{background:rgba(255,182,39,.12);border-color:rgba(255,182,39,.3)}
+  .cat.c4 .ic{background:rgba(124,140,255,.12);border-color:rgba(124,140,255,.3)}
+  .cat.c5 .ic{background:rgba(255,122,69,.14);border-color:rgba(255,122,69,.35)}
+  .cat .meta{flex:1;min-width:0}
+  .cat .meta b{font-size:14.5px;font-weight:700;display:block;line-height:1.3}
+  .cat .meta span{font-size:11.5px;color:var(--sub);font-weight:500}
+  .cat .cprog{margin-top:12px}
+  .cat .cprog .bar{height:4px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden}
+  .cat .cprog .bar i{display:block;height:100%;border-radius:3px;width:0;transition:width .5s}
+  .cat.c1 .cprog .bar i{background:var(--bad)}
+  .cat.c2 .cprog .bar i{background:var(--acc)}
+  .cat.c3 .cprog .bar i{background:var(--acc2)}
+  .cat.c4 .cprog .bar i{background:#7c8cff}
+  .cat.c5 .cprog .bar i{background:var(--hot)}
+  .cat .cprog .t{font-size:10px;color:var(--sub);margin-top:5px;display:flex;justify-content:space-between}
+  .badge1{position:absolute;top:11px;right:11px;font-size:9px;font-weight:900;letter-spacing:.05em;
+    background:var(--bad);color:#fff;padding:3px 7px;border-radius:6px}
+
+  /* ---------- Mode buttons ---------- */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .mode-btn{
+    border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 12px;text-align:left;
+    cursor:pointer;transition:transform .12s,border-color .15s;color:var(--ink);
+  }
+  .mode-btn:active{transform:scale(.97)}
+  .mode-btn .e{font-size:20px;display:block;margin-bottom:7px}
+  .mode-btn b{font-size:13px;font-weight:700;display:block}
+  .mode-btn span{font-size:10.5px;color:var(--sub)}
+  .mode-btn.full{grid-column:1/3;border-color:rgba(255,93,108,.4);background:linear-gradient(135deg,rgba(255,93,108,.1),var(--panel))}
+
+  /* ---------- Quiz ---------- */
+  .qhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+  .qcount{font-family:'Bebas Neue';font-size:20px;letter-spacing:.05em;color:var(--ink)}
+  .qcount small{color:var(--sub);font-size:13px}
+  .qtag{font-size:10px;font-weight:700;padding:4px 9px;border-radius:7px;background:var(--panel2);color:var(--sub);border:1px solid var(--line)}
+  .qtag.one{background:rgba(255,93,108,.15);color:#ff8a95;border-color:rgba(255,93,108,.3)}
+  .qtimer{font-family:'Bebas Neue';font-size:17px;color:var(--acc);letter-spacing:.05em}
+  .qmini-bar{height:4px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-bottom:16px}
+  .qmini-bar i{display:block;height:100%;background:var(--acc);transition:width .3s}
+
+  .qcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 18px;box-shadow:var(--shadow);margin-bottom:16px}
+  .qnum{font-size:11px;color:var(--acc);font-weight:700;margin-bottom:9px;letter-spacing:.05em}
+  .qtext{font-size:15.5px;font-weight:500;line-height:1.65;white-space:pre-wrap}
+  .qtext .fml{display:block;background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;margin:11px 0;font-size:13.5px;color:var(--acc2);font-family:'Bebas Neue',monospace;letter-spacing:.04em}
+
+  .opts{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .opt{
+    border:1.5px solid var(--line);background:var(--panel);border-radius:13px;padding:14px 15px;
+    display:flex;align-items:flex-start;gap:11px;cursor:pointer;transition:all .15s;color:var(--ink);text-align:left;
+    font-size:14px;line-height:1.5;font-weight:500;
+  }
+  .opt:active{transform:scale(.99)}
+  .opt .k{width:22px;height:22px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:12px;font-weight:700;flex:none;color:var(--sub);margin-top:1px}
+  .opt.sel{border-color:var(--acc);background:rgba(61,214,196,.08)}
+  .opt.sel .k{background:var(--acc);color:#04141a;border-color:var(--acc)}
+  .opt.correct{border-color:var(--good);background:rgba(61,220,132,.12)}
+  .opt.correct .k{background:var(--good);color:#04140a;border-color:var(--good)}
+  .opt.wrong{border-color:var(--bad);background:rgba(255,93,108,.1)}
+  .opt.wrong .k{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .opt.disabled{pointer-events:none;opacity:.65}
+  .opt.disabled.correct,.opt.disabled.wrong{opacity:1}
+
+  .explain{border-radius:13px;padding:15px 16px;margin-bottom:14px;font-size:13px;line-height:1.65;animation:fade .3s;border:1px solid var(--line);background:var(--panel2)}
+  .explain.ok{border-color:rgba(61,220,132,.4);background:rgba(61,220,132,.07)}
+  .explain.ng{border-color:rgba(255,93,108,.4);background:rgba(255,93,108,.07)}
+  .explain .res{font-weight:900;font-size:14px;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+  .explain.ok .res{color:var(--good)}
+  .explain.ng .res{color:var(--bad)}
+  .explain .body{color:var(--ink)}
+  .explain .ref{margin-top:9px;font-size:10.5px;color:var(--sub);border-top:1px dashed var(--line);padding-top:8px}
+
+  /* ---------- Flashcard ---------- */
+  .flash{perspective:1400px;margin-bottom:16px}
+  .flash-inner{position:relative;width:100%;min-height:320px;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+  .flash.flipped .flash-inner{transform:rotateY(180deg)}
+  .flash-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    border:1px solid var(--line);border-radius:18px;padding:24px 20px;display:flex;flex-direction:column;
+    justify-content:center;box-shadow:var(--shadow)}
+  .flash-front{background:linear-gradient(150deg,var(--panel),var(--panel2))}
+  .flash-back{background:linear-gradient(150deg,#15263a,var(--panel2));transform:rotateY(180deg)}
+  .flash .tag{font-size:10px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:14px;text-align:center}
+  .flash .q{font-size:17px;font-weight:700;line-height:1.6;text-align:center}
+  .flash .a{font-size:14.5px;line-height:1.7;font-weight:500}
+  .flash .hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--sub)}
+
+  /* ---------- Buttons ---------- */
+  .actions{display:flex;gap:10px}
+  .btn{flex:1;border:none;border-radius:13px;padding:15px;font-size:14px;font-weight:700;cursor:pointer;
+    font-family:inherit;transition:transform .12s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:linear-gradient(135deg,var(--acc),#2a9d8f);color:#04141a}
+  .btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .btn.bad{background:rgba(255,93,108,.16);color:#ff8a95;border:1px solid rgba(255,93,108,.3)}
+  .btn.good{background:rgba(61,220,132,.16);color:var(--good);border:1px solid rgba(61,220,132,.3)}
+  .btn:disabled{opacity:.4;pointer-events:none}
+
+  /* ---------- Result ---------- */
+  .result{text-align:center;padding:20px 6px}
+  .result .big{font-family:'Bebas Neue';font-size:72px;line-height:1;letter-spacing:.02em}
+  .result .big.pass{color:var(--good)}
+  .result .big.fail{color:var(--bad)}
+  .result .verdict{font-size:18px;font-weight:900;margin:6px 0 4px}
+  .result .desc{font-size:12.5px;color:var(--sub);margin-bottom:22px;line-height:1.6}
+  .rstat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:22px}
+  .rstat .box{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 8px}
+  .rstat .box .n{font-family:'Bebas Neue';font-size:28px;line-height:1}
+  .rstat .box .l{font-size:10px;color:var(--sub);margin-top:4px}
+  .rstat .box.ok .n{color:var(--good)}
+  .rstat .box.ng .n{color:var(--bad)}
+
+  /* ---------- Calc reference ---------- */
+  .ref-card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px}
+  .ref-card h3{font-size:14px;font-weight:900;color:var(--acc2);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .ref-card .when{font-size:10.5px;color:var(--sub);margin-bottom:11px}
+  .ref-card .formula{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc2);
+    border-radius:9px;padding:12px 13px;font-family:'Bebas Neue',monospace;font-size:15px;letter-spacing:.04em;
+    color:var(--acc2);margin-bottom:10px;line-height:1.7}
+  .ref-card .note{font-size:12px;color:var(--sub);line-height:1.6}
+  .ref-card .note b{color:var(--ink)}
+
+  /* ---------- Bottom nav ---------- */
+  nav{position:absolute;bottom:0;left:0;right:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(18,24,41,.96);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);display:flex;z-index:10}
+  nav button{flex:1;background:none;border:none;color:var(--sub);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;cursor:pointer;font-family:inherit;transition:color .15s}
+  nav button .ni{font-size:19px;line-height:1}
+  nav button .nl{font-size:9.5px;font-weight:700}
+  nav button.on{color:var(--acc)}
+
+  .empty{text-align:center;color:var(--sub);font-size:13px;padding:50px 20px;line-height:1.7}
+  .pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--sub);margin:0 4px 8px 0}
+  .pill.on{background:var(--acc);color:#04141a;border-color:var(--acc)}
+
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:12px;
+    font-size:12.5px;font-weight:600;opacity:0;transition:all .3s;z-index:50;box-shadow:var(--shadow);pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .filter-row::-webkit-scrollbar{height:0}
+  .chip{flex:none;font-size:11.5px;font-weight:700;padding:8px 13px;border-radius:20px;border:1px solid var(--line);
+    background:var(--panel);color:var(--sub);cursor:pointer;white-space:nowrap;transition:all .15s}
+  .chip.on{background:var(--acc);color:#04141a;border-color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="h-top">
+      <div class="logo">
+        <div class="mark">一</div>
+        <div>
+          <h1>一等学科 暗記マスター</h1>
+          <div class="sub">教則第4版準拠 / 一等無人航空機操縦士</div>
+        </div>
+      </div>
+      <div class="streak" id="streak">🔥 <span id="streakN">0</span></div>
+    </div>
+    <div class="progbar"><i id="globalProg"></i></div>
+    <div class="prog-label"><span id="progTxt">習得 0問</span><span id="progPct">0%</span></div>
+  </header>
+
+  <main id="main"></main>
+
+  <nav>
+    <button data-nav="home" class="on"><span class="ni">🏠</span><span class="nl">ホーム</span></button>
+    <button data-nav="calc"><span class="ni">🧮</span><span class="nl">計算公式</span></button>
+    <button data-nav="review"><span class="ni">🔁</span><span class="nl">復習</span></button>
+    <button data-nav="stats"><span class="ni">📊</span><span class="nl">成績</span></button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  QUESTION BANK  — 一等無人航空機操縦士 学科試験（教則第4版準拠）
+//  cat: 1=規則 2=システム 3=操縦者/運航体制 4=リスク管理 5=計算[一等]
+//  lvl: "common"=二等相当 / "one"=一等のみ
+// ============================================================
+const BANK = [];
+// ============ 第1章：無人航空機に関する規則 ============
+const Q_RULES = [
+  {cat:1,lvl:"common",q:"無人航空機の定義として、機体の重量（機体本体＋バッテリー）の下限は何g以上か。",o:["50g以上","100g以上","150g以上","200g以上"],a:1,e:"航空法上の無人航空機は、機体本体とバッテリーの合計重量が100g以上のもの。100g未満は「模型航空機」として別の規制対象となる。",ref:"教則 第3章 無人航空機の定義"},
+  {cat:1,lvl:"common",q:"特定飛行に該当しないものを1つ選びなさい。",o:["夜間飛行","目視内・補助者ありの自宅敷地内（第三者の立入りなし）での飛行","人口集中地区（DID）上空での飛行","催し場所上空での飛行"],a:1,e:"第三者の立入りを管理した私有地での目視内飛行などは特定飛行に当たらない。夜間飛行・DID上空・催し場所上空はいずれも特定飛行。",ref:"教則 第3章 特定飛行"},
+  {cat:1,lvl:"common",q:"無人航空機を飛行させる際、原則として地表または水面からの高度何m以上の空域は特定飛行（許可・承認が必要）となるか。",o:["100m","120m","150m","200m"],a:2,e:"地表または水面から150m以上の高さの空域は特定飛行に該当し、原則として許可が必要。",ref:"教則 第3章 飛行の空域"},
+  {cat:1,lvl:"common",q:"飛行マニュアルに基づき、第三者から確保すべき水平距離（人又は物件との距離）は原則何m以上か。",o:["10m","20m","30m","50m"],a:2,e:"航空法では、人又は物件との間に30m以上の距離を保って飛行させることが原則として求められる（距離未満は特定飛行）。",ref:"教則 第3章 飛行の方法"},
+  {cat:1,lvl:"common",q:"カテゴリーⅢ飛行の説明として正しいものを1つ選びなさい。",o:["立入管理措置を講じた上で行う特定飛行","第三者の上空で行う、立入管理措置を講じない特定飛行","特定飛行に該当しない飛行","趣味目的の飛行のみを指す"],a:1,e:"カテゴリーⅢ飛行は立入管理措置を講じない＝第三者上空を飛行する最もリスクの高い飛行で、最も厳格な手続が必要。",ref:"教則 第3章 カテゴリー区分"},
+  {cat:1,lvl:"common",q:"カテゴリーⅡA飛行に含まれないものを1つ選びなさい。",o:["最大離陸重量25kg以上の機体の飛行","催し場所上空の飛行","高度150m以上の飛行","目視内での通常の夜間飛行（重量25kg未満・催し場所外）"],a:3,e:"カテゴリーⅡAは空港周辺・高度150m以上・催し場所上空・危険物輸送・物件投下・最大離陸重量25kg以上などリスクの高い飛行。それ以外のカテゴリーⅡはⅡB。",ref:"教則 第3章 カテゴリーⅡA/ⅡB"},
+  {cat:1,lvl:"common",q:"機体の登録について、登録記号の表示と併せて義務付けられているものは何か。",o:["GPSロガーの常時記録","リモートID機能による識別情報の発信","第三者賠償保険の証書携帯","操縦ライセンスの機体貼付"],a:1,e:"登録した無人航空機にはリモートID機能を備え、識別情報を電波で発信することが原則義務付けられている（一部例外あり）。",ref:"教則 第3章 機体の登録・リモートID"},
+  {cat:1,lvl:"common",q:"飛行日誌について、正しい記載が義務付けられる3種の記録の組合せはどれか。",o:["飛行記録・日常点検記録・定期点検記録","飛行記録・気象記録・通信記録","点検記録・整備記録・廃棄記録","飛行記録・事故記録・訓練記録"],a:0,e:"飛行日誌は「飛行記録」「日常点検記録」「点検整備記録」で構成され、特定飛行を行う際は備付け・記載が義務。",ref:"教則 第3章 飛行日誌"},
+  {cat:1,lvl:"common",q:"無人航空機の事故（人の死傷、第三者物件の損傷等）が発生した場合の対応として正しいものは。",o:["損害が軽微なら報告不要","直ちに飛行を中止し、負傷者の救護等の危険防止措置を講じ、国土交通大臣に報告する","保険会社にのみ連絡すればよい","次回の飛行日誌にまとめて記載すればよい"],a:1,e:"事故時はまず飛行中止と救護等の措置を講じ、その後、国土交通大臣（地方航空局）に報告する義務がある。",ref:"教則 第3章 事故等の報告"},
+  {cat:1,lvl:"common",q:"飲酒に関する規定として正しいものを1つ選びなさい。",o:["少量なら飛行は可能","アルコールまたは薬物の影響下では一切飛行させてはならない","操縦補助者の確認があれば可能","検査で基準値以下なら可能"],a:1,e:"アルコールまたは薬物の影響により正常な飛行ができないおそれがある間は、飛行させてはならない（量の多寡を問わない）。",ref:"教則 第3章 遵守事項（飲酒等）"},
+  {cat:1,lvl:"common",q:"夜間飛行を目視内で行う場合に必要な機体側の対応として最も適切なものは。",o:["特に不要","機体の姿勢・方向が分かる灯火等を装備する","音声警報装置を装備する","パラシュートを装備する"],a:1,e:"夜間飛行では機体の向きや姿勢を視認できる灯火等が必要。灯火が無い場合は機体の姿勢確認が困難。",ref:"教則 第3章 夜間飛行の方法"},
+  {cat:1,lvl:"common",q:"物件投下に該当しないものを1つ選びなさい。",o:["農薬の散布","荷物を地上に置くために降下させ静かに離す（着地後に切り離す）","水の散布","資材の空中からの投下"],a:1,e:"着地させてから切り離す行為は物件投下に当たらない。空中から落とす・散布する行為が物件投下に該当する。",ref:"教則 第3章 物件投下"},
+  {cat:1,lvl:"common",q:"小型無人機等飛行禁止法により飛行が禁止・制限される対象として誤っているものは。",o:["国の重要施設（国会・首相官邸等）周辺","外国公館・防衛関係施設周辺","原子力事業所周辺","一般の住宅地全域"],a:3,e:"同法は国の重要施設・外国公館・防衛関係施設・空港・原子力事業所等の周辺を対象とする。一般住宅地全域が対象ではない。",ref:"教則 第2章 関連法令（小型無人機等飛行禁止法）"},
+  {cat:1,lvl:"common",q:"レベル3.5飛行の要件として正しいものを1つ選びなさい。",o:["補助者の配置が必須","技能証明の保有・保険加入・機上カメラ等の活用により補助者・看板を不要にできる目視外飛行","第三者上空を自由に飛行できる","高度制限がない"],a:1,e:"レベル3.5は技能証明保有＋第三者賠償保険加入＋デジタル技術（機上カメラ等）の活用を要件に、補助者や看板配置を不要とした目視外飛行（第4版で追記）。",ref:"教則 第3章 3.1.2 レベル3.5飛行"},
+  {cat:1,lvl:"one",q:"〔一等〕カテゴリーⅢ飛行の許可・承認審査において求められる、第一種機体認証と組み合わせる操縦者要件として正しいものは。",o:["二等技能証明","一等無人航空機操縦士の技能証明","講習修了証のみ","特になし"],a:1,e:"第三者上空（カテゴリーⅢ）飛行には、第一種機体認証を受けた機体と一等技能証明を有する操縦者の組合せが基本となる。",ref:"教則 第3章 機体認証と技能証明の組合せ〔一等〕"},
+  {cat:1,lvl:"common",q:"機体認証の種類について、第三者上空の飛行を想定し最も厳格な基準が適用されるのはどれか。",o:["第一種機体認証","第二種機体認証","型式認証","予備認証"],a:0,e:"第一種機体認証はカテゴリーⅢ飛行（第三者上空）を想定した最も厳格な安全基準。第二種はカテゴリーⅡ相当。",ref:"教則 第3章 機体認証の種類"},
+  {cat:1,lvl:"common",q:"次のうち、許可（空域に関する承認）が必要となる飛行はどれか。",o:["私有地の屋内での飛行","空港等周辺の進入表面等の上空の飛行","ネット等で完全に囲われた施設内の飛行","重量100g未満の機体の屋外飛行"],a:1,e:"空港等の周辺空域は航空機の安全に直結するため許可が必要。屋内や完全に囲われた空間は航空法の飛行規制対象外。",ref:"教則 第3章 飛行の空域"},
+];
+
+// ============ 第2章：無人航空機のシステム ============
+const Q_SYSTEM = [
+  {cat:2,lvl:"common",q:"マルチコプター（回転翼航空機）が前進する際の基本的な姿勢制御として正しいものは。",o:["後方ローターの回転数のみ上げる","機体を進行方向へ傾け（ピッチ）、推力の水平成分で前進する","左右のローターを停止させる","プロペラピッチを反転させる"],a:1,e:"マルチコプターは機体を進みたい方向に傾けることで推力に水平方向の分力を生み、その方向へ移動する。",ref:"教則 第4章 飛行原理（マルチコプター）"},
+  {cat:2,lvl:"common",q:"クアッドコプターで対角のローター同士を同方向に回す主な理由は何か。",o:["速度を上げるため","機体に生じる反トルクを打ち消し、ヨー方向の回転を防ぐため","消費電力を下げるため","騒音を減らすため"],a:1,e:"隣り合うローターを逆回転、対角を同回転にすることで反トルクが相殺され、機体が勝手に回転（ヨー）しない。ヨーは左右回転差で制御する。",ref:"教則 第4章 飛行原理・反トルク"},
+  {cat:2,lvl:"common",q:"リチウムポリマー（LiPo）バッテリーの取扱いとして誤っているものを1つ選びなさい。",o:["膨張（スウェリング）したものは使用を中止する","過充電・過放電を避ける","刺したり強い衝撃を与えない","残量0%で長期保管するのが望ましい"],a:3,e:"LiPoは過放電に弱く、長期保管はストレージ電圧（おおむね各セル3.8V前後）が望ましい。0%放置は劣化・発火リスクを高める。",ref:"教則 第4章 電源系統（バッテリー）"},
+  {cat:2,lvl:"common",q:"GNSS（GPS等）が利用できる環境で無人航空機が得られる主な利点はどれか。",o:["バッテリー容量の増加","自己位置の把握による位置保持（ホバリング安定）や自動帰還の精度向上","モーター出力の倍増","通信距離の無限化"],a:1,e:"GNSSにより機体は自己位置を把握でき、位置保持・自動帰還（RTH）・経路飛行の精度が向上する。",ref:"教則 第4章 機体の構成（測位）"},
+  {cat:2,lvl:"common",q:"IMU（慣性計測装置）が計測する主な物理量の組合せとして正しいものは。",o:["加速度と角速度","電圧と電流","気温と湿度","電波強度と周波数"],a:0,e:"IMUは加速度センサーとジャイロ（角速度センサー）等から成り、機体の姿勢・運動を検出する。",ref:"教則 第4章 機体のシステム（IMU）"},
+  {cat:2,lvl:"common",q:"電子コンパス（地磁気センサー）が誤差を生じやすい環境はどれか。",o:["開けた田園地帯","鉄塔・高圧線・鉄筋構造物の近く","海上の上空","快晴の屋外"],a:1,e:"地磁気センサーは強い磁場や鉄構造物の影響で狂いやすく、機体の方位誤認や飛行不安定の原因となる。離陸前のキャリブレーションが重要。",ref:"教則 第4章 地磁気センサー"},
+  {cat:2,lvl:"common",q:"プロポ（送信機）と機体の通信に広く使われる2.4GHz帯の特徴として正しいものは。",o:["障害物を完全に透過する","直進性が高く、障害物の影響を受けやすい一方で広く利用される","水中でも減衰しない","免許がないと一切使用できない"],a:1,e:"2.4GHz帯は直進性が比較的高く、障害物（建物・人体・樹木）で減衰・反射する。多くのドローンの操縦・映像伝送に使われる。",ref:"教則 第4章 無線・電波"},
+  {cat:2,lvl:"common",q:"フェールセーフ機能の説明として最も適切なものはどれか。",o:["バッテリーを自動交換する機能","通信途絶やバッテリー低下など異常時に、ホバリング・自動帰還・着陸など安全側の動作を行う機能","映像を自動録画する機能","プロペラを高速回転させる機能"],a:1,e:"フェールセーフは異常検知時に機体を安全な状態へ移行させる仕組み（RTH・その場着陸・ホバリング等）。事前設定の理解が重要。",ref:"教則 第4章 フェールセーフ"},
+  {cat:2,lvl:"common",q:"離陸前のキャリブレーションが特に推奨されるセンサーはどれか。",o:["カメラのISO感度","コンパス（地磁気センサー）・IMU","通信用アンテナの長さ","プロペラの色"],a:1,e:"飛行場所が変わったときや磁気環境が異なる場合、コンパス・IMUのキャリブレーションで誤差を補正することが推奨される。",ref:"教則 第4章 飛行前点検・調整"},
+  {cat:2,lvl:"common",q:"プロペラ（ローター）の点検として誤っているものを1つ選びなさい。",o:["欠け・ひび・変形がないか確認する","取付けの緩みを確認する","異物の付着を確認する","変形があってもテープで補修して使用する"],a:3,e:"プロペラの損傷・変形は推力バランスを崩し墜落の原因。損傷品は補修せず必ず交換する。",ref:"教則 第4章 機体の点検（プロペラ）"},
+  {cat:2,lvl:"one",q:"〔一等〕固定翼機の揚力に関し、揚力が比例する関係として正しいものはどれか。",o:["対気速度に比例","対気速度の2乗に比例","対気速度の平方根に比例","対気速度に反比例"],a:1,e:"揚力 L = ½・ρ・V²・S・CL で表され、対気速度Vの2乗に比例する。速度が2倍になると揚力は4倍。",ref:"教則 第4章 飛行原理〔一等〕"},
+  {cat:2,lvl:"one",q:"〔一等〕固定翼機が失速（ストール）する主な条件として正しいものは。",o:["対気速度が高すぎる","迎角（AoA）が臨界迎角を超え、翼上面の流れが剥離する","エンジン出力が高すぎる","重量が軽すぎる"],a:1,e:"失速は迎角が臨界（失速）迎角を超えて気流が剥離し、揚力が急減する現象。速度ではなく迎角が直接の要因。",ref:"教則 第4章 失速〔一等〕"},
+  {cat:2,lvl:"common",q:"モーター（ブラシレスDCモーター）の回転を制御する部品はどれか。",o:["ESC（電子スピードコントローラー）","GNSSモジュール","バロメーター","リモートID発信器"],a:0,e:"ESCはフライトコントローラーの指示に従いモーターへの電力を制御し回転数を変える。",ref:"教則 第4章 機体の構成（ESC）"},
+  {cat:2,lvl:"common",q:"気圧センサー（バロメーター）が主に担う役割はどれか。",o:["水平方向の位置測定","高度の検出・保持","通信の暗号化","プロペラの回転検出"],a:1,e:"気圧センサーは大気圧から高度を推定し、高度保持に用いられる。GNSS高度と組み合わせて精度を高める。",ref:"教則 第4章 センサー（気圧）"},
+  {cat:2,lvl:"common",q:"バッテリー残量が低下した際に最も適切な操縦判断はどれか。",o:["最後まで使い切ってから着陸する","余裕を持って早めに安全な場所へ帰還・着陸させる","出力を上げて急いで遠方を撮影する","残量警告を無視して飛行を継続する"],a:1,e:"電圧降下は急に進むことがあり、余裕（リザーブ）を確保して早めに帰還・着陸するのが安全運航の基本。",ref:"教則 第4章 運航（バッテリー管理）"},
+];
+
+// ============ 第3章：無人航空機の操縦者及び運航体制 ============
+const Q_PILOT = [
+  {cat:3,lvl:"common",q:"操縦者の遵守事項として誤っているものを1つ選びなさい。",o:["飛行前に機体・気象・空域を確認する","アルコールの影響下では飛行しない","他人に迷惑を及ぼす方法で飛行させない","操縦に自信があれば飛行前点検は省略してよい"],a:3,e:"飛行前点検は技量や自信に関わらず必須。点検省略は事故の重大な要因となる。",ref:"教則 第5章 操縦者の行動規範・遵守事項"},
+  {cat:3,lvl:"common",q:"CRM（Crew Resource Management）の考え方として最も適切なものはどれか。",o:["操縦者個人の技量のみに依存する","利用可能な人的・物的資源を活用し、チームで安全な運航を実現する","補助者を置かないことを推奨する","費用を最小化する手法"],a:1,e:"CRMは操縦者・補助者・機材・情報などあらゆる資源を有効活用し、安全な意思決定と運航を行う考え方。",ref:"教則 第5章 安全な運航のための意思決定体制（CRM）"},
+  {cat:3,lvl:"common",q:"目視外飛行で補助者を配置する場合の補助者の役割として誤っているものは。",o:["周囲の第三者や航空機の監視","操縦者への状況連絡・助言","危険時の飛行中止の進言","操縦者に代わって無断で機体を操作する"],a:3,e:"補助者は監視・連絡・助言を担うが、操縦は操縦者が責任を持って行う。役割分担と連絡手段の事前確認が重要。",ref:"教則 第5章 補助者の役割"},
+  {cat:3,lvl:"common",q:"ヒューマンエラーを誘発しやすい操縦者の状態として注意すべきものはどれか。",o:["十分な休息を取った状態","疲労・睡眠不足・ストレス・時間的プレッシャー","適切な水分補給をした状態","余裕を持った飛行計画"],a:1,e:"疲労や焦りはエラーの主要因。IMSAFE等のセルフチェックで自身のコンディションを評価することが推奨される。",ref:"教則 第5章 操縦者のパフォーマンス"},
+  {cat:3,lvl:"common",q:"飛行前のブリーフィングで確認すべき事項として最も不適切なものはどれか。",o:["当日の気象・風・視程","飛行経路・高度・緊急時の対応","役割分担と連絡手段","機体メーカーの株価"],a:3,e:"ブリーフィングでは気象・経路・役割・緊急対応・連絡手段など運航に直結する事項を共有する。",ref:"教則 第5章 運航体制・ブリーフィング"},
+  {cat:3,lvl:"common",q:"操縦者が「飛行を中止すべき」と判断すべき状況として最も適切なものはどれか。",o:["想定を超える強風や視程不良が発生したとき","予定時間より早く終わりそうなとき","観客が増えたとき（立入管理区画内）","バッテリーが満充電のとき"],a:0,e:"安全に飛行できる条件を逸脱した場合（強風・視程不良・機体異常等）は、ためらわず中止する判断が求められる。",ref:"教則 第5章 意思決定・中止判断"},
+  {cat:3,lvl:"common",q:"無人航空機の運航において「運航管理者」等が担う役割として最も適切なものは。",o:["飛行ごとの操縦のみ","運航全体の計画・体制構築・安全管理の統括","機体の製造","保険の販売"],a:1,e:"運航体制では、操縦者だけでなく運航を統括し計画・リスク管理・体制整備を行う役割が重要となる。",ref:"教則 第5章 運航体制"},
+  {cat:3,lvl:"one",q:"〔一等〕より高リスクな飛行（カテゴリーⅢ等）において操縦者に求められる姿勢として最も適切なものはどれか。",o:["手順より直感を優先する","定められた運航手順・限界を厳守し、逸脱時は速やかに安全措置をとる","単独判断で手順を変更する","記録は省略する"],a:1,e:"高リスク運航では手順・限界の厳守と、逸脱時の即応（中止・帰還等）が安全の要。記録と振り返りも重要。",ref:"教則 第5章 高リスク運航の操縦者要件〔一等〕"},
+  {cat:3,lvl:"common",q:"操縦者が継続的に技量を維持・向上させるために有効な取組みはどれか。",o:["一度合格すれば訓練不要","定期的な訓練・シミュレータ活用・飛行後の振り返り","他者の助言を聞かない","飛行記録を残さない"],a:1,e:"技量は使わなければ低下する。定期訓練や飛行後レビュー、記録の活用で安全な技量を維持する。",ref:"教則 第5章 技量の維持・向上"},
+  {cat:3,lvl:"common",q:"飛行中に予期せぬ第三者が立入管理区画内に進入した場合の適切な対応はどれか。",o:["そのまま飛行を継続する","直ちに飛行を中止または安全な空域へ退避させ、第三者の安全を確保する","第三者に近づいて警告する","高度を下げて様子を見る"],a:1,e:"第三者の安全確保が最優先。区画内に人が入った場合は中止・退避など即座の安全措置をとる。",ref:"教則 第5章 立入管理・緊急対応"},
+];
+
+// ============ 第4章：運航上のリスク管理 ============
+const Q_RISK = [
+  {cat:4,lvl:"common",q:"運航リスク管理の基本的な流れとして最も適切な順序はどれか。",o:["飛行→危険の特定→対策","危険の特定→リスクの評価→対策（低減措置）→残留リスクの受容判断","対策→評価→特定","評価→飛行→特定"],a:1,e:"リスク管理はハザード（危険要因）の特定→評価→低減措置→残留リスクの受容可否判断の順で進める。",ref:"教則 第6章 リスク管理の基礎"},
+  {cat:4,lvl:"common",q:"積乱雲（雷雲）が運航に及ぼす危険として最も注意すべきものはどれか。",o:["穏やかな上昇気流のみ","急激な突風・ダウンバースト・降雨・落雷など","気温の安定","視程の向上"],a:1,e:"積乱雲は強い乱気流・突風・ダウンバースト・降雨・落雷を伴い、極めて危険。接近時は飛行を避ける。",ref:"教則 第6章 気象（積乱雲）"},
+  {cat:4,lvl:"common",q:"風に関する運航判断として誤っているものを1つ選びなさい。",o:["機体の耐風性能を超える風では飛行しない","ビル風・地形による局地的な乱れに注意する","突風（ガスト）に備えマージンを確保する","平均風速が低ければ最大瞬間風速は無視してよい"],a:3,e:"平均風速が低くても突風（最大瞬間風速）が機体性能を超えれば危険。ガストを含めて判断する。",ref:"教則 第6章 気象（風）"},
+  {cat:4,lvl:"common",q:"飛行計画の立案で考慮すべき事項として最も不適切なものはどれか。",o:["緊急着陸地点・帰還経路の設定","気象・空域・第三者の有無の確認","バッテリー消費とリザーブの見積り","近隣の飲食店の人気メニュー"],a:3,e:"飛行計画では経路・代替地・気象・空域・電源・緊急対応など安全に直結する要素を検討する。",ref:"教則 第6章 飛行計画の立案"},
+  {cat:4,lvl:"common",q:"GNSSの受信状態が悪化しやすく、位置保持が不安定になりやすい環境はどれか。",o:["上空が開けた広場","高層ビルの谷間・橋桁の下・樹木の密集地","快晴の海岸","平原の中央"],a:1,e:"高い建造物や樹木はGNSS電波を遮り、マルチパスや受信数低下を招く。位置保持が乱れる可能性に注意。",ref:"教則 第6章 運航環境のリスク"},
+  {cat:4,lvl:"common",q:"電波干渉（混信）のリスクを下げる対策として最も適切なものはどれか。",o:["できるだけ多くの機体を同一チャンネルで同時飛行させる","強い電波源（携帯基地局・Wi-Fi密集地等）を避け、事前に電波環境を確認する","送信機のアンテナを取り外す","電源を入れたまま放置する"],a:1,e:"混信を避けるには電波の混み合う場所を避け、事前に環境を確認し、使用チャンネルを適切に管理する。",ref:"教則 第6章 電波環境のリスク"},
+  {cat:4,lvl:"common",q:"フライアウェイ（意図しない逸脱・暴走）への備えとして適切でないものはどれか。",o:["フェールセーフ（RTH等）の設定確認","飛行範囲外への逸脱に備えた緊急時手順の準備","GNSS・コンパスの事前確認","異常の兆候を無視して飛行継続"],a:3,e:"フライアウェイ対策は事前のセンサー確認・フェールセーフ設定・緊急手順が基本。異常兆候の無視は厳禁。",ref:"教則 第6章 緊急時の対応"},
+  {cat:4,lvl:"common",q:"気温が低い環境での運航リスクとして正しいものはどれか。",o:["バッテリー性能はむしろ向上する","低温でバッテリー容量・電圧が低下し、飛行時間が短くなる","モーターは凍結しない限り無影響","気温は飛行に一切影響しない"],a:1,e:"低温下ではバッテリー内部抵抗の増加等で利用可能容量・電圧が低下し、飛行時間が想定より短くなる。",ref:"教則 第6章 気象（気温）"},
+  {cat:4,lvl:"one",q:"〔一等〕第三者上空（カテゴリーⅢ）の運航リスク評価で特に重視されるのはどれか。",o:["撮影画質","地上の人への危害（落下時の運動エネルギー等）を定量的に評価し低減すること","飛行の見栄え","SNSでの注目度"],a:1,e:"カテゴリーⅢでは第三者への危害リスク（落下エネルギー・落下確率等）の定量評価と、それを許容水準まで下げる措置が中核となる。",ref:"教則 第6章 機体の種類に応じた運航リスク評価〔一等〕"},
+  {cat:4,lvl:"one",q:"〔一等〕運航リスクを下げる「リスク低減措置」の例として最も適切なものはどれか。",o:["飛行を派手に演出する","パラシュート等の安全装置の搭載、飛行経路の制限、立入管理の徹底など","記録を残さない","補助者を減らす"],a:1,e:"低減措置には機体側（パラシュート・冗長系）、運用側（経路制限・立入管理・速度制限）など複数のバリアを組み合わせる。",ref:"教則 第6章 リスク低減措置〔一等〕"},
+  {cat:4,lvl:"common",q:"運航前に確認すべき気象情報として最も適切な組合せはどれか。",o:["風向・風速・降水・視程・雷の有無","株価・為替・金利","交通渋滞・電車遅延","近隣店舗の営業時間"],a:0,e:"運航判断には風・降水・視程・雷・気温など、飛行の安全に直結する気象要素の確認が不可欠。",ref:"教則 第6章 気象情報の活用"},
+];
+
+// ============ 計算問題〔一等のみ〕必勝公式5選 ============
+// 出典準拠の頻出5パターン: 仕事率/旋回半径/滑空距離/フレネル/水平到達距離
+const Q_CALC = [
+  // --- ① 仕事率 P（W=T, P∝Tω の比例） ---
+  {cat:5,lvl:"one",calc:"仕事率",q:"機体重量10kgのドローンが回転数300rpmで飛行したとき6Wを消費した。5kg積載して機体重量15kg・回転数390rpmにした場合の仕事率はおよそ何Wか。\n（ホバリング時 W=T、空気密度ρは無視）",fml:"W=T ,  P ∝ T×ω  （比例計算）",o:["約9.0W","約11.7W","約14.4W","約18.0W"],a:1,e:"ホバリング時は重量W＝推力T。仕事率Pは T×ω（推力×回転数）に比例する。\n①元: T×ω=10×300=3000\n②後: T×ω=15×390=5850\n③倍率=5850÷3000=1.95倍\n④P=6W×1.95=11.7W。\n\n小学校の比例式だけで解ける。電卓使用可。",ref:"必勝公式① 仕事率 P∝Tω"},
+  {cat:5,lvl:"one",calc:"仕事率",q:"重量8kg・回転数250rpmで4Wを消費するドローンを、重量12kg・回転数300rpmにした。仕事率はおよそ何Wか。\n（W=T、ρ無視）",fml:"P ∝ T×ω",o:["約5.4W","約7.2W","約9.0W","約10.8W"],a:1,e:"①元 T×ω=8×250=2000 ②後 12×300=3600 ③倍率=3600/2000=1.8 ④4W×1.8=7.2W。重量と回転数の積の比をとって元の値に掛けるだけ。",ref:"必勝公式① 仕事率 P∝Tω"},
+  {cat:5,lvl:"one",calc:"仕事率",q:"仕事率Pが比例する量の組合せとして正しいものはどれか。（ホバリング時、ρ無視）",fml:"W=T ,  P ∝ T×ω",o:["重量と高度の積","推力Tと回転数ωの積","電圧と気温の積","速度と時間の積"],a:1,e:"ホバリング時 W=T（重量＝推力）。仕事率Pは推力T×回転数ω に比例する（P∝Tω）。重量と回転数が変わったら、それぞれの積の比＝倍率を元の仕事率に掛ける。",ref:"必勝公式① 仕事率 P∝Tω"},
+
+  // --- ② 旋回半径 r ---
+  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度20m/s、バンク角25°（tan25°=0.47）、重力加速度9.8m/s²で定常旋回したときの旋回半径はおよそ何mか。",fml:"r = V² ÷ (g × tanθ)",o:["約68m","約87m","約105m","約122m"],a:1,e:"r=V²/(g·tanθ)=20²/(9.8×0.47)=400/4.606≒86.8m。\n\n押さえる数値は①速度V②重力加速度g③tanθの3つだけ。tanθは問題文に与えられるので自分で角度計算は不要。",ref:"必勝公式② 旋回半径 r=V²/(g·tanθ)"},
+  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度25m/s、バンク角30°（tan30°=0.58）、g=9.8m/s²で定常旋回。旋回半径に最も近いものは。",fml:"r = V² ÷ (g × tanθ)",o:["約88m","約110m","約132m","約156m"],a:1,e:"r=25²/(9.8×0.58)=625/5.684≒110m。分母はg×tanθ、分子はVの2乗。速度が大きいほど（2乗で）旋回半径は大きくなる。",ref:"必勝公式② 旋回半径 r=V²/(g·tanθ)"},
+  {cat:5,lvl:"one",calc:"旋回半径",q:"旋回半径の公式で、分子と分母に入る記号の配置として正しいものはどれか。",fml:"r = V² ÷ (g × tanθ)",o:["分子 g×tanθ／分母 V²","分子 V²／分母 g×tanθ","分子 V／分母 g","分子 tanθ／分母 V²"],a:1,e:"r=V²/(g·tanθ)。分子＝飛行速度の2乗、分母＝重力加速度×tan(バンク角)。配置を逆にするミスが多いので、分子はV²と覚える。",ref:"必勝公式② 旋回半径 r=V²/(g·tanθ)"},
+
+  // --- ③ 滑空距離 d（最も簡単・ラッキー問題） ---
+  {cat:5,lvl:"one",calc:"滑空距離",q:"高度400m、揚抗比12のとき、滑空距離はおよそ何mか。",fml:"d = 揚抗比 × 高度",o:["約3,300m","約4,800m","約6,000m","約7,200m"],a:1,e:"d=揚抗比×高度=12×400=4800m。掛けるだけの最も簡単な問題。揚抗比とは揚力と抗力の比で、1m降下する間に何m前進できるかを表す。",ref:"必勝公式③ 滑空距離 d=揚抗比×高度"},
+  {cat:5,lvl:"one",calc:"滑空距離",q:"高度300m、揚抗比15の機体が滑空した場合の到達距離はおよそ何mか。",fml:"d = 揚抗比 × 高度",o:["約3,000m","約4,500m","約6,000m","約7,500m"],a:1,e:"d=15×300=4500m。揚抗比×高度の単純な掛け算。揚抗比が大きいほど遠くまで滑空できる。",ref:"必勝公式③ 滑空距離 d=揚抗比×高度"},
+  {cat:5,lvl:"one",calc:"滑空距離",q:"滑空距離を求める式として正しいものはどれか。",fml:"d = 揚抗比 × 高度",o:["高度 ÷ 揚抗比","揚抗比 × 高度","揚抗比 ÷ 高度","高度 × 速度"],a:1,e:"滑空距離 d＝揚抗比×高度。割り算ではなく掛け算。揚抗比12・高度400mなら4800mと、公式を知っていれば即答できるサービス問題。",ref:"必勝公式③ 滑空距離 d=揚抗比×高度"},
+
+  // --- ④ フレネルゾーン半径 R（最後に60%を忘れない） ---
+  {cat:5,lvl:"one",calc:"フレネル",q:"周波数2.4GHz、送信側と受信側の距離640mのとき、フレネルゾーン半径の60%の値はおよそ何mか。\n光速 c=3×10⁸m/s。",fml:"λ=3÷(2.4)÷10 ,  R=√(λ·d/4) , 最後に×0.6",o:["約1.8m","約2.7m","約3.6m","約4.5m"],a:1,e:"①波長 λ=3÷2.4÷10=0.125m\n②フレネルゾーン半径 R=√(λ×d/4)=√(0.125×640/4)=√20≒4.47m\n③最後に60%：4.47×0.6≒2.68m\n\n【最重要】最後に0.6倍するのを忘れない！ここが一番のミスポイント。",ref:"必勝公式④ フレネルゾーン R（×0.6を忘れない）"},
+  {cat:5,lvl:"one",calc:"フレネル",q:"フレネルゾーンの計算で、波長λを求める式として正しいものはどれか（c=3×10⁸m/s）。2.4GHzの場合。",fml:"λ = 3 ÷ (2.4) ÷ 10",o:["λ=2.4÷3÷10","λ=3÷(2.4)÷10 ＝0.125m","λ=3×2.4×10","λ=3÷2.4 ＝1.25m"],a:1,e:"λ=3÷(周波数GHz)÷10。2.4GHzなら 3÷2.4÷10=0.125m。5.7GHzなら 3÷5.7÷10≒0.053m。()内の周波数を変えるだけで波長が出る。",ref:"必勝公式④ フレネル（波長λの求め方）"},
+  {cat:5,lvl:"one",calc:"フレネル",q:"フレネルゾーン半径の計算で、最後に必ず行う処理として正しいものはどれか。",fml:"求めた半径に ×0.6（60%）",o:["半径を2倍する","半径の60%（×0.6）を求める","半径を周波数で割る","何もしない"],a:1,e:"問題は「フレネルゾーン半径の60%」を問うことが多く、公式で半径を出した後に必ず0.6倍する。この最終処理を忘れる受験者が非常に多いので要注意。",ref:"必勝公式④ フレネル（最後の×0.6）"},
+
+  // --- ⑤ 水平到達距離 x（放物運動） ---
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度600mから飛行速度25m/sで水平に飛行中、機体が制御を失い落下した。落下開始地点の真下から、地面に達するまでの水平到達距離はおよそ何mか。\ng=9.8m/s²。",fml:"x = V × √(2h ÷ g)",o:["約198m","約277m","約356m","約412m"],a:1,e:"①落下時間 t=√(2h/g)=√(2×600/9.8)=√122.4≒11.07s\n②水平到達距離 x=V×t=25×11.07≒277m。\n\n高さhから落ちる時間に、水平速度Vを掛けるだけ。記号の配置（√の中は2h/g）に注意。",ref:"必勝公式⑤ 水平到達距離 x=V·√(2h/g)"},
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度45m、水平速度20m/sで飛行中に落下した場合の水平到達距離はおよそ何mか。g=9.8m/s²。",fml:"x = V × √(2h ÷ g)",o:["約40m","約61m","約82m","約100m"],a:1,e:"①t=√(2×45/9.8)=√9.18≒3.03s ②x=20×3.03≒61m。√の中身は2h÷g。落下時間に水平速度を掛けて求める。",ref:"必勝公式⑤ 水平到達距離 x=V·√(2h/g)"},
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"水平到達距離xの公式として正しいものはどれか（h:高度、V:速度、g:重力加速度）。",fml:"x = V × √(2h ÷ g)",o:["x = V × √(2h÷g)","x = V ÷ √(2h÷g)","x = h × √(2V÷g)","x = g × √(2h÷V)"],a:0,e:"x=V×√(2h/g)。落下時間 t=√(2h/g) に水平速度Vを掛ける形。ルートの中は「2×高度÷重力加速度」。配置のケアレスミスに注意。",ref:"必勝公式⑤ 水平到達距離 x=V·√(2h/g)"},
+];
+
+BANK.push(...Q_RULES, ...Q_SYSTEM, ...Q_PILOT, ...Q_RISK, ...Q_CALC);
+// assign stable ids
+BANK.forEach((x,i)=>x.id=i);
+
+
+
+// ============================================================
+//  APP LOGIC
+// ============================================================
+const CATS = {
+  1:{name:"無人航空機に関する規則",short:"規則",icon:"📜",cls:"c1",desc:"航空法・カテゴリー区分・飛行ルール"},
+  2:{name:"無人航空機のシステム",short:"システム",icon:"⚙️",cls:"c2",desc:"飛行原理・機体構成・電源・無線"},
+  3:{name:"操縦者及び運航体制",short:"操縦者",icon:"🧑‍✈️",cls:"c3",desc:"遵守事項・CRM・ヒューマンファクター"},
+  4:{name:"運航上のリスク管理",short:"リスク",icon:"🛡️",cls:"c4",desc:"気象・リスク評価・緊急対応"},
+  5:{name:"計算問題〔一等〕",short:"計算",icon:"🧮",cls:"c5",desc:"旋回半径・フレネル・落下・KE・飛行時間"},
+};
+
+// ---------- Persistent state ----------
+const KEY="ittou_state_v1";
+let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{} };
+
+async function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) S = Object.assign(S, JSON.parse(raw));
+  }catch(e){ /* first run */ }
+  // streak day logic
+  const today = new Date().toDateString();
+  if(S.lastDay !== today){
+    const y = new Date(Date.now()-864e5).toDateString();
+    if(S.lastDay === y) S.streak += 1; else if(S.lastDay) S.streak = 1; else S.streak = 1;
+    S.lastDay = today;
+    save();
+  }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+// ---------- helpers ----------
+const $ = s=>document.querySelector(s);
+const main = $("#main");
+let Tview="home";
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),1600); }
+function byCat(c){ return BANK.filter(q=>q.cat===c); }
+function knownCount(list){ return list.filter(q=>S.known[q.id]).length; }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function refreshHeader(){
+  const tot=BANK.length, kn=BANK.filter(q=>S.known[q.id]).length;
+  const pct=Math.round(kn/tot*100);
+  $("#globalProg").style.width=pct+"%";
+  $("#progTxt").textContent=`習得 ${kn} / ${tot}問`;
+  $("#progPct").textContent=pct+"%";
+  $("#streakN").textContent=S.streak||0;
+}
+
+// ============================================================
+//  HOME
+// ============================================================
+function renderHome(){
+  Tview="home";
+  let h=`<div class="screen">`;
+  h+=`<div class="sec-title">学習モード</div><div class="modes">`;
+  h+=`<button class="mode-btn full" onclick="startQuiz('mock')"><span class="e">📝</span><b>本番模試（70問構成）</b><span>二等相当50＋一等15＋計算5・合格90%</span></button>`;
+  h+=`<button class="mode-btn" onclick="startQuiz('all')"><span class="e">🎯</span><b>全問演習</b><span>${BANK.length}問をランダム出題</span></button>`;
+  h+=`<button class="mode-btn" onclick="startFlash('all')"><span class="e">🃏</span><b>暗記カード</b><span>めくって覚える</span></button>`;
+  h+=`</div>`;
+
+  h+=`<div class="sec-title">分野別（タップで選択）</div>`;
+  for(const c of [1,2,3,4,5]){
+    const list=byCat(c), kn=knownCount(list), pct=list.length?Math.round(kn/list.length*100):0;
+    const C=CATS[c];
+    h+=`<div class="cat ${C.cls}" onclick="catMenu(${c})">
+      ${c===5?'<div class="badge1">一等核心</div>':''}
+      <div class="row">
+        <div class="ic">${C.icon}</div>
+        <div class="meta"><b>${C.name}</b><span>${C.desc}</span></div>
+      </div>
+      <div class="cprog"><div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="t"><span>${list.length}問</span><span>習得 ${kn}・${pct}%</span></div>
+      </div>
+    </div>`;
+  }
+  h+=`</div>`;
+  main.innerHTML=h; main.scrollTop=0; refreshHeader();
+}
+
+function catMenu(c){
+  const C=CATS[c], list=byCat(c), kn=knownCount(list);
+  let h=`<div class="screen">
+    <div class="qhead"><div><div class="qcount">${C.icon} ${C.short}</div></div>
+    <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome()">← 戻る</button></div>
+    <div class="cat ${C.cls}" style="cursor:default"><div class="row"><div class="ic">${C.icon}</div>
+    <div class="meta"><b>${C.name}</b><span>全${list.length}問 / 習得 ${kn}問</span></div></div></div>
+    <div class="modes" style="margin-top:14px">
+      <button class="mode-btn" onclick="startQuiz('cat',${c})"><span class="e">📝</span><b>クイズ演習</b><span>4択で解答</span></button>
+      <button class="mode-btn" onclick="startFlash('cat',${c})"><span class="e">🃏</span><b>暗記カード</b><span>めくって暗記</span></button>
+    </div>`;
+  if(c===5){
+    h+=`<button class="mode-btn full" style="margin-top:2px" onclick="setNav('calc')"><span class="e">📐</span><b>計算公式シートを見る</b><span>5分野の公式と解き方</span></button>`;
+  }
+  h+=`</div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+
+// ============================================================
+//  QUIZ ENGINE
+// ============================================================
+let Q={list:[],i:0,sel:null,answered:false,correct:0,wrongIds:[],mode:"",timer:0,tInt:null,mock:false};
+
+function buildMock(){
+  // 二等相当(common) 50 + 一等(one 非計算) 15 + 計算 5  → 母数が少なければ可能な範囲で
+  const common = shuffle(BANK.filter(q=>q.lvl==="common"));
+  const oneNon = shuffle(BANK.filter(q=>q.lvl==="one" && q.cat!==5));
+  const calc   = shuffle(BANK.filter(q=>q.cat===5));
+  const pick=(arr,n)=>arr.slice(0,Math.min(n,arr.length));
+  return [...pick(common,50), ...pick(oneNon,15), ...pick(calc,5)];
+}
+
+function startQuiz(mode,cat){
+  let list;
+  if(mode==="mock"){ list=buildMock(); Q.mock=true; }
+  else if(mode==="cat"){ list=shuffle(byCat(cat)); Q.mock=false; }
+  else if(mode==="review"){ list=shuffle(BANK.filter(q=>S.wrong[q.id])); Q.mock=false; }
+  else { list=shuffle(BANK); Q.mock=false; }
+  if(!list.length){ toast("対象の問題がありません"); return; }
+  Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode,timer:0,tInt:null,mock:Q.mock};
+  if(Q.mock){ Q.timer=75*60; tickTimer(); }
+  renderQuiz();
+}
+function tickTimer(){
+  clearInterval(Q.tInt);
+  Q.tInt=setInterval(()=>{
+    Q.timer--; const el=$("#qtimer"); 
+    if(el){ const m=Math.floor(Q.timer/60),s=Q.timer%60; el.textContent=`${m}:${String(s).padStart(2,'0')}`; }
+    if(Q.timer<=0){ clearInterval(Q.tInt); finishQuiz(); }
+  },1000);
+}
+
+function renderQuiz(){
+  Tview="quiz";
+  const q=Q.list[Q.i];
+  const total=Q.list.length;
+  const tag = q.cat===5 ? `<span class="qtag one">計算〔一等〕</span>`
+            : q.lvl==="one" ? `<span class="qtag one">一等</span>`
+            : `<span class="qtag">${CATS[q.cat].short}</span>`;
+  const tmr = Q.mock ? `<span class="qtimer" id="qtimer">75:00</span>` : "";
+  let h=`<div class="screen">
+    <div class="qhead">
+      <div class="qcount">${Q.i+1}<small> / ${total}</small></div>
+      <div style="display:flex;align-items:center;gap:10px">${tmr}${tag}</div>
+    </div>
+    <div class="qmini-bar"><i style="width:${(Q.i)/total*100}%"></i></div>
+    <div class="qcard">
+      <div class="qnum">Q${Q.i+1}${q.calc?'・'+q.calc:''}</div>
+      <div class="qtext">${fmtQ(q)}</div>
+    </div>
+    <div class="opts" id="opts">`;
+  q.o.forEach((opt,idx)=>{
+    h+=`<button class="opt" data-i="${idx}" onclick="choose(${idx})"><span class="k">${"ABCD"[idx]}</span><span>${opt}</span></button>`;
+  });
+  h+=`</div><div id="exp"></div><div class="actions" id="qact">
+    <button class="btn ghost" onclick="quitQuiz()" style="flex:.5">中断</button>
+    <button class="btn primary" id="nextBtn" disabled onclick="nextQ()">解答する</button>
+  </div></div>`;
+  main.innerHTML=h; main.scrollTop=0;
+  if(Q.mock){ tickTimer(); }
+}
+function fmtQ(q){
+  let t = q.q.replace(/\n/g,"<br>");
+  if(q.fml) t += `<span class="fml">公式: ${q.fml}</span>`;
+  return t;
+}
+
+function choose(idx){
+  if(Q.answered) return;
+  Q.sel=idx;
+  document.querySelectorAll(".opt").forEach(o=>o.classList.toggle("sel",+o.dataset.i===idx));
+  const b=$("#nextBtn"); b.disabled=false;
+}
+
+function nextQ(){
+  const q=Q.list[Q.i];
+  if(!Q.answered){
+    // grade
+    Q.answered=true;
+    const correct = Q.sel===q.a;
+    S.seen[q.id]=true;
+    if(correct){ Q.correct++; if(!Q.mock){ S.known[q.id]=true; } delete S.wrong[q.id]; }
+    else { Q.wrongIds.push(q.id); S.wrong[q.id]=true; }
+    S.attempts[q.id]=(S.attempts[q.id]||0)+1;
+    save();
+    document.querySelectorAll(".opt").forEach(o=>{
+      const i=+o.dataset.i; o.classList.add("disabled");
+      if(i===q.a) o.classList.add("correct");
+      else if(i===Q.sel) o.classList.add("wrong");
+    });
+    if(!Q.mock){
+      $("#exp").innerHTML=`<div class="explain ${correct?'ok':'ng'}">
+        <div class="res">${correct?'✓ 正解':'✗ 不正解'} — 正答は ${"ABCD"[q.a]}</div>
+        <div class="body">${q.e.replace(/\n/g,"<br>")}</div>
+        <div class="ref">📖 ${q.ref}</div></div>`;
+    }
+    const last = Q.i>=Q.list.length-1;
+    $("#nextBtn").textContent = last ? "結果を見る" : "次の問題 →";
+    $("#nextBtn").disabled=false;
+    // in mock, auto: still require tap to continue
+  } else {
+    Q.i++; Q.sel=null; Q.answered=false;
+    if(Q.i>=Q.list.length){ finishQuiz(); } else renderQuiz();
+  }
+}
+
+function quitQuiz(){ clearInterval(Q.tInt); if(confirm("演習を中断してホームに戻りますか？")){ renderHome(); setNavActive("home"); } }
+
+function finishQuiz(){
+  Tview="result"; clearInterval(Q.tInt);
+  const total=Q.list.length, correct=Q.correct, wrong=total-correct;
+  const pct=Math.round(correct/total*100);
+  const pass = Q.mock ? pct>=90 : pct>=80;
+  S.history.push({t:Date.now(),mode:Q.mode,total,correct,pct,mock:Q.mock});
+  if(S.history.length>50) S.history=S.history.slice(-50);
+  save();
+  let note;
+  if(Q.mock) note = pass?"合格基準（90%）クリア！この調子で本番に臨みましょう。":"本番は二等相当・一等とも各90%以上が必要。間違えた問題を復習で潰しましょう。";
+  else note = pass?"よくできています。":"復習タブで弱点を重点的に固めましょう。";
+  let h=`<div class="screen result">
+    <div class="big ${pass?'pass':'fail'}">${pct}%</div>
+    <div class="verdict">${pass?'🎉 合格ライン':'もう一歩'}</div>
+    <div class="desc">${note}</div>
+    <div class="rstat">
+      <div class="box ok"><div class="n">${correct}</div><div class="l">正解</div></div>
+      <div class="box ng"><div class="n">${wrong}</div><div class="l">不正解</div></div>
+      <div class="box"><div class="n">${total}</div><div class="l">問題数</div></div>
+    </div>
+    <div class="actions" style="flex-direction:column">
+      ${Q.wrongIds.length?`<button class="btn bad" onclick="reviewThese()">✗ 間違えた${Q.wrongIds.length}問を復習</button>`:''}
+      <button class="btn primary" onclick="renderHome();setNavActive('home')">ホームへ戻る</button>
+    </div></div>`;
+  main.innerHTML=h; main.scrollTop=0; refreshHeader();
+}
+let _lastWrong=[];
+function reviewThese(){
+  _lastWrong=Q.wrongIds.slice();
+  const list=BANK.filter(q=>_lastWrong.includes(q.id));
+  Q={list:shuffle(list),i:0,sel:null,answered:false,correct:0,wrongIds:[],mode:"review",timer:0,tInt:null,mock:false};
+  renderQuiz();
+}
+
+// ============================================================
+//  FLASHCARDS
+// ============================================================
+let F={list:[],i:0,flipped:false};
+function startFlash(mode,cat){
+  let list = mode==="cat"?byCat(cat):BANK;
+  list=shuffle(list);
+  if(!list.length){toast("問題がありません");return;}
+  F={list,i:0,flipped:false}; renderFlash();
+}
+function renderFlash(){
+  Tview="flash";
+  const q=F.list[F.i];
+  const ans = q.o[q.a];
+  const tagTxt = q.cat===5?`計算〔一等〕${q.calc?'・'+q.calc:''}`:(q.lvl==="one"?`一等・${CATS[q.cat].short}`:CATS[q.cat].short);
+  let h=`<div class="screen">
+    <div class="qhead"><div class="qcount">${F.i+1}<small> / ${F.list.length}</small></div>
+      <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
+    <div class="qmini-bar"><i style="width:${(F.i+1)/F.list.length*100}%"></i></div>
+    <div class="flash ${F.flipped?'flipped':''}" id="flash" onclick="flip()">
+      <div class="flash-inner">
+        <div class="flash-face flash-front">
+          <div class="tag">${tagTxt}</div>
+          <div class="q">${q.q.replace(/\n/g,"<br>")}${q.fml?`<span class="fml" style="margin-top:14px">公式: ${q.fml}</span>`:''}</div>
+          <div class="hint">タップで答えを表示</div>
+        </div>
+        <div class="flash-face flash-back">
+          <div class="tag">正答 ${"ABCD"[q.a]}</div>
+          <div class="a"><b style="color:var(--good)">${ans}</b><br><br>${q.e.replace(/\n/g,"<br>")}</div>
+          <div class="hint">📖 ${q.ref}</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn bad" onclick="flashMark(false)">🔁 まだ</button>
+      <button class="btn good" onclick="flashMark(true)">✓ 覚えた</button>
+    </div></div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+function flip(){ F.flipped=!F.flipped; $("#flash").classList.toggle("flipped",F.flipped); }
+function flashMark(known){
+  const q=F.list[F.i];
+  if(known){ S.known[q.id]=true; delete S.wrong[q.id]; } else { S.wrong[q.id]=true; }
+  S.seen[q.id]=true; save();
+  F.i++; F.flipped=false;
+  if(F.i>=F.list.length){ flashDone(); } else renderFlash();
+  refreshHeader();
+}
+function flashDone(){
+  main.innerHTML=`<div class="screen result">
+    <div class="big pass">✓</div><div class="verdict">カード完了</div>
+    <div class="desc">このセットを一周しました。<br>「まだ」にしたカードは復習タブに入っています。</div>
+    <div class="actions" style="flex-direction:column">
+      <button class="btn primary" onclick="renderHome();setNavActive('home')">ホームへ</button>
+    </div></div>`;
+  main.scrollTop=0; refreshHeader();
+}
+
+// ============================================================
+//  CALC FORMULA SHEET
+// ============================================================
+function renderCalc(){
+  Tview="calc";
+  const sheets=[
+    {t:"① 仕事率 P",ic:"⚡",when:"重量・回転数の変化から消費電力(W)を求める",f:"W = T ,  P ∝ T × ω （比例計算）",n:"ホバリング時は<b>重量W＝推力T</b>。仕事率Pは<b>推力T×回転数ω</b>に比例。①元のT×ω ②変化後のT×ω ③その倍率を元の仕事率に掛けるだけ。例: 10kg×300=3000→15kg×390=5850 は1.95倍 → 6W×1.95=11.7W。ρ(空気密度)は無視。"},
+    {t:"② 旋回半径 r",ic:"🛩️",when:"飛行速度とバンク角から旋回半径を求める",f:"r = V² ÷ (g × tanθ)",n:"<b>分子=V²</b>(飛行速度の2乗)、<b>分母=g×tanθ</b>。g=9.8。tanθは問題文に与えられる(例 tan25°=0.47)ので角度計算は不要。分子分母の配置を逆にするミスに注意。"},
+    {t:"③ 滑空距離 d",ic:"🛬",when:"高度と揚抗比から滑空到達距離を求める（最も簡単）",f:"d = 揚抗比 × 高度",n:"<b>掛けるだけ</b>のサービス問題。揚抗比12・高度400m → 12×400=<b>4800m</b>。揚抗比は1m降下する間に何m前進できるかの比。割り算にしないこと。"},
+    {t:"④ フレネルゾーン半径 R",ic:"📡",when:"電波の見通し確保に必要な半径（最後に60%）",f:"λ=3÷(GHz)÷10 ,  R=√(λ·d/4) ,  最後に×0.6",n:"①<b>波長λ</b>=3÷周波数(GHz)÷10。2.4GHz→0.125m / 5.7GHz→0.053m。②距離dを入れて半径Rを計算。③<b>最後に必ず0.6倍(60%)</b>。この最終処理を忘れる人が最も多い！"},
+    {t:"⑤ 水平到達距離 x",ic:"📐",when:"高度と水平速度から落下地点までの水平距離を求める",f:"x = V × √(2h ÷ g)",n:"高さhから落ちる時間 t=√(2h/g) に<b>水平速度V</b>を掛ける。√の中は<b>2×高度÷重力加速度</b>。例: h=600m, V=25 → t≒11.07s → x≒277m。記号の配置でのケアレスミスに注意。"},
+  ];
+  let h=`<div class="screen"><div class="sec-title">🧮 計算公式シート（一等の核心・各1問×5）</div>
+    <div class="explain" style="margin-bottom:16px">本番は計算5問。<b>2問以上の失点は致命的</b>です。公式と「数値を入れて解く手順」をセットで暗記しましょう。試験画面の電卓は使用可、持込不可。</div>`;
+  for(const s of sheets){
+    h+=`<div class="ref-card"><h3>${s.ic} ${s.t}</h3><div class="when">${s.when}</div>
+      <div class="formula">${s.f}</div><div class="note">${s.n}</div></div>`;
+  }
+  h+=`<button class="btn primary" style="margin-top:6px" onclick="startQuiz('cat',5)">計算問題を解く →</button></div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+
+// ============================================================
+//  REVIEW (wrong answers)
+// ============================================================
+function renderReview(){
+  Tview="review";
+  const wrongList=BANK.filter(q=>S.wrong[q.id]);
+  let h=`<div class="screen"><div class="sec-title">🔁 復習リスト（要再確認）</div>`;
+  if(!wrongList.length){
+    h+=`<div class="empty">🎉<br>復習が必要な問題はありません。<br>クイズや暗記カードで間違えた問題が<br>ここに集まります。</div>
+    <button class="btn ghost" onclick="renderHome();setNavActive('home')">ホームへ</button></div>`;
+    main.innerHTML=h; main.scrollTop=0; return;
+  }
+  h+=`<div class="explain ng" style="margin-bottom:14px"><b>${wrongList.length}問</b>が要復習です。まとめて演習して正解すると、自動でリストから外れます。</div>
+    <button class="btn bad" style="margin-bottom:14px" onclick="startQuiz('review')">▶ ${wrongList.length}問をまとめて復習</button>`;
+  // group by cat
+  for(const c of [1,2,3,4,5]){
+    const sub=wrongList.filter(q=>q.cat===c);
+    if(!sub.length) continue;
+    h+=`<div style="margin:8px 2px 8px;font-size:12px;font-weight:700;color:var(--sub)">${CATS[c].icon} ${CATS[c].short}（${sub.length}）</div>`;
+    sub.forEach(q=>{
+      h+=`<div class="ref-card" style="padding:13px 14px"><div style="font-size:13px;line-height:1.5;font-weight:500">${q.q.split("\n")[0]}</div>
+        <div style="font-size:11px;color:var(--good);margin-top:7px">正答: ${q.o[q.a]}</div>
+        <div style="font-size:10.5px;color:var(--sub);margin-top:5px;line-height:1.5">${q.e.split("\n")[0]}</div></div>`;
+    });
+  }
+  h+=`</div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+
+// ============================================================
+//  STATS
+// ============================================================
+function renderStats(){
+  Tview="stats";
+  const tot=BANK.length, kn=BANK.filter(q=>S.known[q.id]).length, seen=BANK.filter(q=>S.seen[q.id]).length;
+  const wrong=BANK.filter(q=>S.wrong[q.id]).length;
+  const mocks=S.history.filter(h=>h.mock);
+  const lastMock=mocks[mocks.length-1];
+  let h=`<div class="screen"><div class="sec-title">📊 学習成績</div>
+    <div class="rstat" style="margin-bottom:14px">
+      <div class="box ok"><div class="n">${kn}</div><div class="l">習得</div></div>
+      <div class="box ng"><div class="n">${wrong}</div><div class="l">要復習</div></div>
+      <div class="box"><div class="n">${Math.round(kn/tot*100)}<span style="font-size:14px">%</span></div><div class="l">全体習得率</div></div>
+    </div>`;
+  // per-category bars
+  h+=`<div class="ref-card"><h3 style="color:var(--ink);font-size:13px">分野別 習得率</h3><div style="margin-top:6px">`;
+  for(const c of [1,2,3,4,5]){
+    const list=byCat(c), k=knownCount(list), p=list.length?Math.round(k/list.length*100):0;
+    h+=`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px">
+      <span>${CATS[c].icon} ${CATS[c].short}</span><span style="color:var(--sub)">${k}/${list.length}・${p}%</span></div>
+      <div style="height:7px;background:var(--panel2);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:${p}%;background:var(--acc);border-radius:4px"></i></div></div>`;
+  }
+  h+=`</div></div>`;
+  // mock history
+  h+=`<div class="ref-card"><h3 style="color:var(--ink);font-size:13px">模試の記録</h3>`;
+  if(lastMock){
+    h+=`<div class="note" style="margin-top:4px">直近: <b style="color:${lastMock.pct>=90?'var(--good)':'var(--bad)'}">${lastMock.pct}%</b>（${lastMock.correct}/${lastMock.total}）・${lastMock.pct>=90?'合格基準達成':'基準未達'}</div>`;
+    const recent=mocks.slice(-6);
+    h+=`<div style="display:flex;gap:6px;align-items:flex-end;height:70px;margin-top:14px">`;
+    recent.forEach(m=>{ h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:100%;height:${Math.max(8,m.pct*0.55)}px;background:${m.pct>=90?'var(--good)':'var(--bad)'};border-radius:4px 4px 0 0"></div>
+      <span style="font-size:9px;color:var(--sub)">${m.pct}</span></div>`; });
+    h+=`</div>`;
+  } else {
+    h+=`<div class="note" style="margin-top:4px">まだ模試の記録がありません。「本番模試」に挑戦してみましょう。</div>`;
+  }
+  h+=`</div>`;
+  h+=`<button class="btn ghost" style="margin-top:6px" onclick="resetAll()">学習データをリセット</button></div>`;
+  main.innerHTML=h; main.scrollTop=0; refreshHeader();
+}
+async function resetAll(){
+  if(!confirm("習得状況・復習リスト・成績をすべて消去します。よろしいですか？")) return;
+  S={ known:{}, wrong:{}, seen:{}, streak:S.streak, lastDay:S.lastDay, history:[], attempts:{} };
+  await save(); toast("リセットしました"); renderStats(); refreshHeader();
+}
+
+// ============================================================
+//  NAV
+// ============================================================
+function setNavActive(name){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.nav===name));
+}
+function setNav(name){
+  setNavActive(name);
+  if(name==="home") renderHome();
+  else if(name==="calc") renderCalc();
+  else if(name==="review") renderReview();
+  else if(name==="stats") renderStats();
+}
+document.querySelectorAll("nav button").forEach(b=>{
+  b.addEventListener("click",()=>setNav(b.dataset.nav));
+});
+
+// ---------- boot ----------
+(async()=>{ await load(); renderHome(); refreshHeader(); })();
+
+// ---------- PWA: Service Worker 登録 ----------
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+</script>
