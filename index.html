@@ -192,6 +192,11 @@
   .flash .dmean{font-size:18px;font-weight:700;line-height:1.5;text-align:center;color:var(--ink);margin-bottom:12px}
   .flash .dunit{font-size:13px;color:var(--acc);text-align:center;font-weight:600;
     border-top:1px dashed var(--line);padding-top:11px}
+  /* デッキ（公式/記号カード）を1画面に収める */
+  .deck-screen{display:flex;flex-direction:column;height:100%}
+  .deck-flash{flex:1;min-height:0;margin-bottom:14px}
+  .deck-flash .flash-inner{height:100%;min-height:0}
+  .deck-flash .flash-face{padding:20px 18px}
 
   /* ---------- Buttons ---------- */
   .actions{display:flex;gap:10px}
@@ -408,8 +413,8 @@ const CATS = {
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
   {term:"仕事率 P", formula:"W = T ,  P ∝ T × ω", note:"ホバリング時は重量W＝推力T。仕事率は推力T×回転数ωに比例。変化後のT×ωの倍率を元の仕事率に掛ける。"},
-  {term:"旋回半径 r", formula:"r = V² ÷ (g × tanθ)", note:"分子=飛行速度の2乗、分母=重力加速度×tan(バンク角)。配置を逆にしない。"},
-  {term:"滑空距離 d", formula:"d = 揚抗比 × 高度", note:"掛けるだけ。揚抗比12・高度400m → 4800m。"},
+  {term:"旋回半径 r", formula:"r = V² ÷ (g × tanφ)", note:"φ=バンク角（θと書く教材もある）。分子=飛行速度の2乗、分母=重力加速度×tan(バンク角)。配置を逆にしない。"},
+  {term:"滑空距離 d", formula:"d = 揚抗比(L/D) × 高度", note:"掛けるだけ。揚抗比12・高度400m → 4800m。揚抗比＝揚力L÷抗力D。"},
   {term:"フレネルゾーン半径 R", formula:"λ=3÷(GHz)÷10 ,  R=√(λ·d/4) , 最後に×0.6", note:"波長λを先に出す（2.4GHz→0.125m）。半径を出したら最後に必ず0.6倍。"},
   {term:"水平到達距離 x", formula:"x = V × √(2h ÷ g)", note:"落下時間 t=√(2h/g) に水平速度Vを掛ける。√の中は2×高度÷重力加速度。"},
   {term:"波長 λ（ラムダ）", formula:"λ = 光速c ÷ 周波数f  ＝ 3÷(GHz)÷10", note:"2.4GHz→0.125m / 5.7GHz→0.053m。周波数が高いほど波長は短い。"},
@@ -420,12 +425,12 @@ const FORMULA_CARDS = [
 const SYMBOL_CARDS = [
   {sym:"V", mean:"飛行速度（対気速度）", unit:"m/s"},
   {sym:"g", mean:"重力加速度", unit:"9.8 m/s²"},
-  {sym:"θ（シータ）", mean:"バンク角（旋回時の傾き角）。tanθの形で問題文に与えられる", unit:"度 / tanθ"},
+  {sym:"φ（ファイ）／θ", mean:"バンク角（旋回時の傾き角）。航空力学ではφ、ドローン教材ではθと書くこともある。tanの形で問題文に与えられる", unit:"度 / tanφ"},
   {sym:"r", mean:"旋回半径", unit:"m"},
   {sym:"λ（ラムダ）", mean:"波長。λ=3÷(GHz)÷10 で求める", unit:"m"},
   {sym:"f", mean:"周波数（2.4GHz・5.7GHz など）", unit:"Hz / GHz"},
   {sym:"c", mean:"光速（電波の速さ）", unit:"3×10⁸ m/s"},
-  {sym:"d / D", mean:"距離（送信側と受信側の距離など）", unit:"m"},
+  {sym:"d", mean:"距離（送信側と受信側の距離など）", unit:"m"},
   {sym:"R", mean:"フレネルゾーン半径", unit:"m"},
   {sym:"h", mean:"高度（高さ）", unit:"m"},
   {sym:"t", mean:"時間（落下時間など）", unit:"s（秒）"},
@@ -433,7 +438,9 @@ const SYMBOL_CARDS = [
   {sym:"W", mean:"機体重量。ホバリング時は推力Tと等しい", unit:"kg / N"},
   {sym:"ω（オメガ）", mean:"角速度・回転数（rpm）", unit:"rpm / rad/s"},
   {sym:"P", mean:"仕事率（消費電力）。P∝Tω", unit:"W（ワット）"},
-  {sym:"揚抗比", mean:"揚力÷抗力。1m降下する間に何m前進できるかの比", unit:"（無次元）"},
+  {sym:"L", mean:"揚力（翼が生む上向きの力）。揚抗比＝L/D", unit:"N など"},
+  {sym:"D", mean:"抗力（進行方向と逆向きの空気抵抗）。揚抗比＝L/D", unit:"N など"},
+  {sym:"揚抗比（L/D）", mean:"揚力L÷抗力D。1m降下する間に何m前進できるかの比。滑空距離=揚抗比×高度", unit:"（無次元）"},
   {sym:"∝", mean:"比例の記号（左辺は右辺に比例する）", unit:"—"},
   {sym:"ρ（ロー）", mean:"空気密度。計算問題では「無視してよい」と指定されることが多い", unit:"kg/m³"},
 ];
@@ -768,11 +775,11 @@ function renderDeck(){
   }else{
     backHtml = `<div class="dmean">${c.mean}</div>${c.unit&&c.unit!=="—"?`<div class="dunit">単位: ${c.unit}</div>`:''}`;
   }
-  let h=`<div class="screen">
+  let h=`<div class="screen deck-screen">
     <div class="qhead"><div class="qcount">${D.i+1}<small> / ${D.list.length}</small></div>
       <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
     <div class="qmini-bar"><i style="width:${(D.i+1)/D.list.length*100}%"></i></div>
-    <div class="flash ${D.flipped?'flipped':''}" id="flash" onclick="flipDeck()">
+    <div class="flash deck-flash ${D.flipped?'flipped':''}" id="flash" onclick="flipDeck()">
       <div class="flash-inner">
         <div class="flash-face flash-front" style="justify-content:center;text-align:center">
           <div class="tag">${title}</div>
