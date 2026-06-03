@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
 // キャッシュ版数。アプリを更新したらこの数字を上げると新しい内容が反映される。
-const CACHE = 'ittou-gakka-v6';
+const CACHE = 'ittou-gakka-v7';
 
 const ASSETS = [
   './',
