@@ -166,18 +166,26 @@
   .explain .ref{margin-top:9px;font-size:10.5px;color:var(--sub);border-top:1px dashed var(--line);padding-top:8px}
 
   /* ---------- Flashcard ---------- */
-  .flash{perspective:1400px;margin-bottom:16px}
-  .flash-inner{position:relative;width:100%;min-height:320px;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+  .flash{perspective:1600px;margin-bottom:16px}
+  .flash-inner{position:relative;width:100%;min-height:420px;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
   .flash.flipped .flash-inner{transform:rotateY(180deg)}
   .flash-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-    border:1px solid var(--line);border-radius:18px;padding:24px 20px;display:flex;flex-direction:column;
-    justify-content:center;box-shadow:var(--shadow)}
+    border:1px solid var(--line);border-radius:18px;padding:20px 18px 44px;display:flex;flex-direction:column;
+    justify-content:flex-start;box-shadow:var(--shadow);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .flash-face::-webkit-scrollbar{width:0}
   .flash-front{background:linear-gradient(150deg,var(--panel),var(--panel2))}
   .flash-back{background:linear-gradient(150deg,#15263a,var(--panel2));transform:rotateY(180deg)}
-  .flash .tag{font-size:10px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:14px;text-align:center}
-  .flash .q{font-size:17px;font-weight:700;line-height:1.6;text-align:center}
-  .flash .a{font-size:14.5px;line-height:1.7;font-weight:500}
-  .flash .hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--sub)}
+  .flash .tag{font-size:10px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px;text-align:center;flex:none}
+  .flash .fq{font-size:15px;font-weight:700;line-height:1.55;margin-bottom:14px}
+  .flash .a{font-size:13px;line-height:1.65;font-weight:500;color:var(--ink)}
+  .flash .fopts{display:flex;flex-direction:column;gap:8px}
+  .flash .fopt{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;line-height:1.45;font-weight:500;
+    border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:rgba(0,0,0,.15)}
+  .flash .fk{width:19px;height:19px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;color:var(--sub);margin-top:1px}
+  .flash .fopt.fok{border-color:var(--good);background:rgba(61,220,132,.14)}
+  .flash .fk.fkok{background:var(--good);color:#04140a;border-color:var(--good)}
+  .flash .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
 
   /* ---------- Buttons ---------- */
   .actions{display:flex;gap:10px}
@@ -493,6 +501,7 @@ function buildMock(){
 }
 
 function startQuiz(mode,cat){
+  clearInterval(Q.tInt);   // 前回のタイマー（特に模試）が残って誤作動するのを防ぐ
   let list;
   if(mode==="mock"){ list=buildMock(); Q.mock=true; }
   else if(mode==="cat"){ list=shuffle(byCat(cat)); Q.mock=false; }
@@ -627,6 +636,7 @@ function reviewThese(){
 // ============================================================
 let F={list:[],i:0,flipped:false};
 function startFlash(mode,cat){
+  clearInterval(Q.tInt);   // 模試タイマーが残っていれば停止
   let list = mode==="cat"?byCat(cat):BANK;
   list=shuffle(list);
   if(!list.length){toast("問題がありません");return;}
@@ -637,6 +647,13 @@ function renderFlash(){
   const q=F.list[F.i];
   const ans = q.o[q.a];
   const tagTxt = q.cat===5?`計算〔一等〕${q.calc?'・'+q.calc:''}`:(q.lvl==="one"?`一等・${CATS[q.cat].short}`:CATS[q.cat].short);
+  // 表面: 設問＋4択をすべて表示（「適切／不適切なものを選べ」が成立するように）
+  let optsHtml = q.o.map((opt,idx)=>`<div class="fopt"><span class="fk">${"ABCD"[idx]}</span><span>${opt}</span></div>`).join("");
+  // 裏面: 正答の選択肢を強調表示＋解説
+  let optsAns = q.o.map((opt,idx)=>{
+    const ok = idx===q.a;
+    return `<div class="fopt${ok?' fok':''}"><span class="fk${ok?' fkok':''}">${"ABCD"[idx]}</span><span>${opt}</span></div>`;
+  }).join("");
   let h=`<div class="screen">
     <div class="qhead"><div class="qcount">${F.i+1}<small> / ${F.list.length}</small></div>
       <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
@@ -645,12 +662,14 @@ function renderFlash(){
       <div class="flash-inner">
         <div class="flash-face flash-front">
           <div class="tag">${tagTxt}</div>
-          <div class="q">${q.q.replace(/\n/g,"<br>")}${q.fml?`<span class="fml" style="margin-top:14px">公式: ${q.fml}</span>`:''}</div>
+          <div class="fq">${q.q.replace(/\n/g,"<br>")}${q.fml?`<span class="fml" style="margin:12px 0 4px">公式: ${q.fml}</span>`:''}</div>
+          <div class="fopts">${optsHtml}</div>
           <div class="hint">タップで答えを表示</div>
         </div>
         <div class="flash-face flash-back">
-          <div class="tag">正答 ${"ABCD"[q.a]}</div>
-          <div class="a"><b style="color:var(--good)">${ans}</b><br><br>${q.e.replace(/\n/g,"<br>")}</div>
+          <div class="tag" style="color:var(--good)">正答 ${"ABCD"[q.a]}</div>
+          <div class="fopts" style="margin-bottom:12px">${optsAns}</div>
+          <div class="a" style="font-size:13px">${q.e.replace(/\n/g,"<br>")}</div>
           <div class="hint">📖 ${q.ref}</div>
         </div>
       </div>
@@ -785,6 +804,7 @@ function setNavActive(name){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.nav===name));
 }
 function setNav(name){
+  clearInterval(Q.tInt);   // クイズ/模試から他タブへ移動したらタイマー停止
   setNavActive(name);
   if(name==="home") renderHome();
   else if(name==="calc") renderCalc();
