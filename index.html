@@ -197,6 +197,20 @@
   .deck-flash{height:380px;margin-bottom:14px}
   .deck-flash .flash-inner{height:100%;min-height:380px}
   .deck-flash .flash-face{padding:18px}
+  /* 記号一覧テーブル */
+  .symtable-wrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  .symtable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--panel)}
+  .symtable th{background:var(--panel2);color:var(--sub);font-weight:700;font-size:11px;
+    padding:9px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  .symtable td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+  .symtable tr:last-child td{border-bottom:none}
+  .symtable tr:nth-child(even){background:var(--panel2)}
+  .symtable .st-sym{font-weight:900;color:var(--acc2);font-size:17px;white-space:nowrap;width:50px;text-align:center}
+  .symtable .st-read{color:var(--sub);font-size:11px;white-space:nowrap;width:72px}
+  .symtable .st-mean{color:#eef2fb;font-size:13px;font-weight:500}
+  .symtable .st-en{display:inline-block;margin-top:6px;font-size:10.5px;color:var(--acc);font-weight:700;
+    border:1px solid rgba(61,214,196,.35);border-radius:5px;padding:1px 7px;letter-spacing:.02em}
+  /* 記号一覧ここまで */
 
   /* ---------- Buttons ---------- */
   .actions{display:flex;gap:10px}
@@ -237,9 +251,9 @@
   nav{position:absolute;bottom:0;left:0;right:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(18,24,41,.96);backdrop-filter:blur(14px);
     border-top:1px solid var(--line);display:flex;z-index:10}
   nav button{flex:1;background:none;border:none;color:var(--sub);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:3px;cursor:pointer;font-family:inherit;transition:color .15s}
-  nav button .ni{font-size:19px;line-height:1}
-  nav button .nl{font-size:9.5px;font-weight:700}
+    align-items:center;justify-content:center;gap:3px;cursor:pointer;font-family:inherit;transition:color .15s;padding:0 2px}
+  nav button .ni{font-size:18px;line-height:1}
+  nav button .nl{font-size:9px;font-weight:700;white-space:nowrap}
   nav button.on{color:var(--acc)}
 
   .empty{text-align:center;color:var(--sub);font-size:13px;padding:50px 20px;line-height:1.7}
@@ -280,6 +294,7 @@
 
   <nav>
     <button data-nav="home" class="on"><span class="ni">🏠</span><span class="nl">ホーム</span></button>
+    <button data-nav="symbols"><span class="ni">🔤</span><span class="nl">記号一覧</span></button>
     <button data-nav="calc"><span class="ni">🧮</span><span class="nl">計算公式</span></button>
     <button data-nav="review"><span class="ni">🔁</span><span class="nl">復習</span></button>
     <button data-nav="stats"><span class="ni">📊</span><span class="nl">成績</span></button>
@@ -427,7 +442,7 @@ const SYMBOL_CARDS = [
   {sym:"L", read:"エル", mean:"揚力。水平定常飛行では W=L∝ρV²", en:"Lift", unit:"N など"},
   {sym:"V", read:"ヴィ", mean:"速度（飛行速度・対気速度）", en:"Velocity", unit:"m/s"},
   {sym:"H / h", read:"エイチ", mean:"高さ（高度）", en:"Height", unit:"m"},
-  {sym:"D", read:"ディー", mean:"距離（送受信アンテナ間距離）／抗力（揚抗比L/Dの分母）", en:"Distance", unit:"m / N"},
+  {sym:"D / d", read:"ディー", mean:"距離（フレネルの送受信アンテナ間距離・滑空距離d=h×(L/D)）／抗力（揚抗比L/Dの分母）", en:"Distance", unit:"m / N"},
   {sym:"G / g", read:"ジー", mean:"重力加速度", en:"Gravity", unit:"9.8 m/s²"},
   {sym:"P", read:"ピー", mean:"パワー（仕事率）。P∝ρω³∝Tω", en:"Power", unit:"W（ワット）"},
   {sym:"T", read:"ティー", mean:"推力。ホバリング時は機体重量Wと等しい（W=T）", en:"Thrust", unit:"N / kgf"},
@@ -442,7 +457,6 @@ const SYMBOL_CARDS = [
   {sym:"∝", read:"プロポーショナル", mean:"比例（左辺は右辺に比例する）", en:"Proportional", unit:"—"},
   {sym:"f", read:"エフ", mean:"周波数（使用周波数）。MHz×0.001=GHz", en:"Frequency", unit:"Hz / GHz"},
   {sym:"c", read:"シー", mean:"光速（電波の速さ）", en:"—", unit:"3×10⁸ m/s"},
-  {sym:"d", read:"ディー", mean:"滑空距離。d=h×(L/D)", en:"distance", unit:"m"},
   {sym:"x", read:"エックス", mean:"水平到達距離。x=V√(2h/g)", en:"—", unit:"m"},
 ];
 
@@ -808,6 +822,30 @@ function nextDeck(){ D.i=(D.i+1)%D.list.length; D.flipped=false; renderDeck(); }
 function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
 
 // ============================================================
+//  記号一覧（表形式）
+// ============================================================
+function renderSymbolTable(){
+  Tview="symbols";
+  let rows = SYMBOL_CARDS.map(c=>{
+    const en = (c.en && c.en!=="—") ? c.en : "";
+    return `<tr>
+      <td class="st-sym">${c.sym}</td>
+      <td class="st-read">${c.read||""}</td>
+      <td class="st-mean">${c.mean}${en?`<div class="st-en">${en}</div>`:''}</td>
+    </tr>`;
+  }).join("");
+  let h=`<div class="screen"><div class="sec-title">🔤 記号一覧（計算問題で使う記号）</div>
+    <div class="explain" style="margin-bottom:14px">計算問題に出る記号と読み・意味の一覧です。1枚ずつ覚えたいときは「公式カード/記号カード」（ホーム下部）を使ってください。</div>
+    <div class="symtable-wrap"><table class="symtable">
+      <thead><tr><th>記号</th><th>読み</th><th>意味</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <button class="btn primary" style="margin-top:14px" onclick="startDeck('symbol')">記号カードでめくって覚える →</button>
+    </div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+
+// ============================================================
 //  CALC FORMULA SHEET
 // ============================================================
 function renderCalc(){
@@ -915,6 +953,7 @@ function setNav(name){
   clearInterval(Q.tInt);   // クイズ/模試から他タブへ移動したらタイマー停止
   setNavActive(name);
   if(name==="home") renderHome();
+  else if(name==="symbols") renderSymbolTable();
   else if(name==="calc") renderCalc();
   else if(name==="review") renderReview();
   else if(name==="stats") renderStats();
