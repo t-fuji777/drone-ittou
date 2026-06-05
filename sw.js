@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
-// キャッシュ版数。アプリを更新したらこの数字を上げると新しい内容が反映される。
-const CACHE = 'ittou-gakka-v17';
+// 更新が即反映されるよう、HTMLはネット優先（network-first）。
+const CACHE = 'ittou-gakka-v18';
 
 const ASSETS = [
   './',
@@ -12,14 +12,14 @@ const ASSETS = [
   './icon-180.png'
 ];
 
-// インストール時にアプリ本体をキャッシュ
+// インストール時にアプリ本体をキャッシュし、すぐ新版を有効化
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
 });
 
-// 新版有効化時に、このアプリの古い版数キャッシュのみ削除（他アプリのキャッシュには触れない）
+// 古い版数キャッシュを削除し、即座に制御を奪う
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
@@ -31,15 +31,37 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// 取得戦略: キャッシュ優先 + ネット取得分は裏で更新（stale-while-revalidate）
+// 取得戦略:
+//  ・HTML/ページ遷移 → network-first（最新を取得、失敗時のみキャッシュ）
+//  ・その他(画像/manifest) → cache-first（速度重視、裏で更新）
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+
+  const req = e.request;
+  const isHTML = req.mode === 'navigate' ||
+                 (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHTML) {
+    // network-first: 常に最新のindex.htmlを優先
+    e.respondWith(
+      fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+        return res;
+      }).catch(() =>
+        caches.match(req).then((c) => c || caches.match('./index.html'))
+      )
+    );
+    return;
+  }
+
+  // それ以外: cache-first + 裏で更新
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      const fetched = fetch(e.request).then((res) => {
+    caches.match(req).then((cached) => {
+      const fetched = fetch(req).then((res) => {
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          caches.open(CACHE).then((c) => c.put(req, copy));
         }
         return res;
       }).catch(() => cached);
