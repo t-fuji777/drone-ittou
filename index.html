@@ -42,7 +42,7 @@
     height:100dvh;
     display:flex;flex-direction:column;
   }
-  #app{flex:1;display:flex;flex-direction:column;max-width:480px;width:100%;margin:0 auto;overflow:hidden;position:relative}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:480px;width:100%;margin:0 auto;overflow:hidden}
 
   /* ---------- Header ---------- */
   header{
@@ -55,10 +55,9 @@
   .h-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .logo{display:flex;align-items:center;gap:10px}
   .logo .mark{
-    width:34px;height:34px;border-radius:9px;
-    background:linear-gradient(135deg,var(--acc),#2a9d8f);
-    display:grid;place-items:center;font-weight:900;color:#04141a;font-size:18px;
-    box-shadow:0 4px 14px rgba(61,214,196,.4);
+    width:36px;height:36px;border-radius:9px;
+    object-fit:cover;
+    box-shadow:0 4px 14px rgba(0,0,0,.5);
   }
   .logo h1{font-size:15px;font-weight:900;letter-spacing:.02em;line-height:1.15}
   .logo .sub{font-size:10.5px;color:var(--sub);font-weight:500;margin-top:1px}
@@ -278,7 +277,7 @@
   <header>
     <div class="h-top">
       <div class="logo">
-        <div class="mark">一</div>
+        <img class="mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9IiMxYTI0MzgiLz4KICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQxNDIyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8IS0tIDQgcHJvcGVsbGVyIHJpbmdzIC0tPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlmYjBjNCIgc3Ryb2tlLXdpZHRoPSIzLjIiPgogICAgPGNpcmNsZSBjeD0iMjciIGN5PSIyNyIgcj0iMTMiLz4KICAgIDxjaXJjbGUgY3g9IjczIiBjeT0iMjciIHI9IjEzIi8+CiAgICA8Y2lyY2xlIGN4PSIyNyIgY3k9IjczIiByPSIxMyIvPgogICAgPGNpcmNsZSBjeD0iNzMiIGN5PSI3MyIgcj0iMTMiLz4KICA8L2c+CiAgPCEtLSBhcm1zIChYKSAtLT4KICA8ZyBzdHJva2U9IiMzYTRhNjMiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxsaW5lIHgxPSIzNCIgeTE9IjM0IiB4Mj0iNjYiIHkyPSI2NiIvPgogICAgPGxpbmUgeDE9IjY2IiB5MT0iMzQiIHgyPSIzNCIgeTI9IjY2Ii8+CiAgPC9nPgogIDwhLS0gY2VudGVyIGJvZHkgLS0+CiAgPHJlY3QgeD0iMzgiIHk9IjM4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHJ4PSI1IiBmaWxsPSIjYzRjZWRkIiBzdHJva2U9IiM5ZmIwYzQiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPCEtLSBnb2xkIDEgLS0+CiAgPHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iR2VvcmdpYSwgJ1RpbWVzIE5ldyBSb21hbicsIHNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Q0YWYzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPjE8L3RleHQ+Cjwvc3ZnPgo=" alt="アプリアイコン">
         <div>
           <h1>一等学科 暗記マスター</h1>
           <div class="sub">教則第4版準拠 / 一等無人航空機操縦士</div>
