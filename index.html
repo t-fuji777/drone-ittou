@@ -46,7 +46,7 @@
 
   /* ---------- Header ---------- */
   header{
-    padding:calc(16px + env(safe-area-inset-top)) 18px 12px;
+    padding:calc(16px + env(safe-area-inset-top)) 18px 16px;
     border-bottom:1px solid var(--line);
     background:linear-gradient(180deg,rgba(18,24,41,.9),rgba(18,24,41,.4));
     backdrop-filter:blur(8px);
@@ -71,7 +71,7 @@
   .prog-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-top:6px;font-weight:500}
 
   /* ---------- Scroll body ---------- */
-  main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px calc(80px + env(safe-area-inset-bottom))}
+  main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:30px 16px calc(80px + env(safe-area-inset-bottom))}
   main::-webkit-scrollbar{width:0}
 
   .screen{animation:fade .3s ease}
@@ -193,8 +193,8 @@
     border-top:1px dashed var(--line);padding-top:11px}
   /* デッキ（公式/記号カード） */
   .deck-screen{display:block}
-  .deck-flash{height:380px;margin-bottom:14px}
-  .deck-flash .flash-inner{height:100%;min-height:380px}
+  .deck-flash{height:440px;margin-bottom:14px}
+  .deck-flash .flash-inner{height:100%;min-height:440px}
   .deck-flash .flash-face{padding:18px}
   /* 記号一覧テーブル */
   .symtable-wrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
