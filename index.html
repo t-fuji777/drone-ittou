@@ -137,7 +137,7 @@
   .qcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 18px;box-shadow:var(--shadow);margin-bottom:16px}
   .qnum{font-size:11px;color:var(--acc);font-weight:700;margin-bottom:9px;letter-spacing:.05em}
   .qtext{font-size:15.5px;font-weight:500;line-height:1.65;white-space:pre-wrap}
-  .qtext .fml{display:block;background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;margin:11px 0;font-size:13.5px;color:var(--acc2);font-family:'Bebas Neue',monospace;letter-spacing:.04em}
+  .qtext .fml{display:block;background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;margin:11px 0;font-size:13.5px;color:var(--acc2);font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;letter-spacing:.02em;font-weight:600}
 
   .opts{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
   .opt{
@@ -188,7 +188,7 @@
   .flash .fk.fkok{background:var(--good);color:#04140a;border-color:var(--good)}
   .flash .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
   .flash .dformula{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc2);
-    border-radius:10px;padding:14px 14px;font-family:'Bebas Neue',monospace;font-size:18px;letter-spacing:.04em;
+    border-radius:10px;padding:14px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:16px;letter-spacing:.02em;font-weight:600;
     color:var(--acc2);margin-bottom:14px;line-height:1.7;text-align:center}
   .flash .dmean{font-size:18px;font-weight:700;line-height:1.5;text-align:center;color:var(--ink);margin-bottom:12px}
   .flash .dunit{font-size:13px;color:var(--acc);text-align:center;font-weight:600;
@@ -243,8 +243,8 @@
   .ref-card h3{font-size:14px;font-weight:900;color:var(--acc2);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .ref-card .when{font-size:10.5px;color:var(--sub);margin-bottom:11px}
   .ref-card .formula{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc2);
-    border-radius:9px;padding:12px 13px;font-family:'Bebas Neue',monospace;font-size:15px;letter-spacing:.04em;
-    color:var(--acc2);margin-bottom:10px;line-height:1.7}
+    border-radius:9px;padding:13px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:14px;letter-spacing:0;
+    color:var(--acc2);margin-bottom:10px;line-height:2;font-weight:600;white-space:normal;word-break:keep-all}
   .ref-card .note{font-size:12px;color:var(--sub);line-height:1.6}
   .ref-card .note b{color:var(--ink)}
 
@@ -389,12 +389,12 @@ const Q_CALC = [
   {cat:5,lvl:"one",calc:"揚力･推力･仕事率",q:"プロペラ（回転翼）の推力Tと回転角速度ωの関係として正しいものはどれか。\n（空気密度ρは一定とする）",fml:"T ∝ ρ × ω²",o:["Tはωに比例","Tはωの2乗に比例","Tはωの3乗に比例","Tはωに反比例"],a:1,e:"回転翼の推力は T ∝ ρω²。空気密度ρが一定なら、推力は回転角速度ωの2乗に比例する。ωが2倍になると推力は4倍。",ref:"公式集① T∝ρω²"},
   {cat:5,lvl:"one",calc:"揚力･推力･仕事率",q:"回転翼の消費パワー（仕事率）Pの比例関係として正しいものはどれか。（ρ一定）",fml:"P ∝ ρ × ω³ ∝ T × ω",o:["P ∝ ω","P ∝ ω²","P ∝ ω³（＝Tω）","P ∝ 1/ω"],a:2,e:"仕事率は P ∝ ρω³ ∝ Tω。ρ一定なら回転角速度ωの3乗に比例する。T∝ω²なのでP∝Tω＝ω³と一致する。",ref:"公式集① P∝ρω³∝Tω"},
   {cat:5,lvl:"one",calc:"揚力･推力･仕事率",q:"回転角速度4,000rpmで推力5kgfのドローンを、空気密度を変えずに回転角速度6,000rpmにした。このときの推力はおよそ何kgfか。",fml:"T ∝ ω²  →  T₂ = T₁ × (ω₂/ω₁)²",o:["約7.5kgf","約11.3kgf","約15.0kgf","約22.5kgf"],a:1,e:"T∝ω²より T₂=T₁×(ω₂/ω₁)²=5×(6000/4000)²=5×(1.5)²=5×2.25=11.25kgf。回転数1.5倍で推力は2.25倍になる。",ref:"公式集① T∝ω²"},
-  {cat:5,lvl:"one",calc:"揚力･推力･仕事率",q:"飛行機の水平定常飛行における、機体重量W・揚力L・空気密度ρ・飛行速度Vの関係として正しいものはどれか。",fml:"W = L ∝ ρ × V²",o:["W＝L、かつLはVに比例","W＝L、かつLはVの2乗に比例","W＝L、かつLはVに反比例","WとLは無関係"],a:1,e:"水平定常飛行では W=L（重量＝揚力）。揚力は L∝ρV² で、飛行速度Vの2乗に比例する。回転翼のホバリング時は W=T（重量＝推力）。",ref:"公式集① W=L∝ρV²"},
+  {cat:5,lvl:"one",calc:"揚力･推力･仕事率",q:"飛行機の水平定常飛行における、機体重量W・揚力L・空気密度ρ・飛行速度Vの関係として正しいものはどれか。",fml:"W = L ∝ ρ × v²",o:["W＝L、かつLはVに比例","W＝L、かつLはVの2乗に比例","W＝L、かつLはVに反比例","WとLは無関係"],a:1,e:"水平定常飛行では W=L（重量＝揚力）。揚力は L∝ρV² で、飛行速度Vの2乗に比例する。回転翼のホバリング時は W=T（重量＝推力）。",ref:"公式集① W=L∝ρV²"},
 
   // --- ② 旋回半径 r ---
-  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度10m/s、バンク角φ=20°（tan20°=0.36）で定常旋回したときの旋回半径はおよそ何mか。g=9.8m/s²。",fml:"r = V² ÷ (g × tanφ)",o:["約21m","約28m","約35m","約42m"],a:1,e:"r=V²/(g·tanφ)=10²/(9.8×0.36)=100/3.528≒28m。バンク角φの定常旋回。分子=速度の2乗、分母=g×tanφ。",ref:"公式集② r=V²/(g·tanφ)"},
+  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度10m/s、バンク角φ=20°（tan20°=0.36）で定常旋回したときの旋回半径はおよそ何mか。g=9.8m/s²。",fml:"r = v² ÷ (g × tanφ)",o:["約21m","約28m","約35m","約42m"],a:1,e:"r=V²/(g·tanφ)=10²/(9.8×0.36)=100/3.528≒28m。バンク角φの定常旋回。分子=速度の2乗、分母=g×tanφ。",ref:"公式集② r=V²/(g·tanφ)"},
   {cat:5,lvl:"one",calc:"旋回半径",q:"飛行機がバンク角φで定常旋回するとき、水平定常飛行に比べて必要な揚力は何倍になるか。",fml:"必要揚力 = 1 ÷ cosφ 倍",o:["cosφ 倍","1/cosφ 倍","tanφ 倍","sinφ 倍"],a:1,e:"バンク角φの定常旋回では、水平飛行に比べ 1/cosφ 倍の揚力が必要。例えばφ=20°ならcos20°=0.94なので 1/0.94≒1.06倍の揚力が必要になる。",ref:"公式集② 必要揚力=1/cosφ"},
-  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度20m/s、バンク角φ=30°（tan30°=0.58）で定常旋回。旋回半径に最も近いものは。g=9.8m/s²。",fml:"r = V² ÷ (g × tanφ)",o:["約50m","約70m","約90m","約110m"],a:1,e:"r=20²/(9.8×0.58)=400/5.684≒70m。速度が大きいほど（2乗で）旋回半径は大きくなる。",ref:"公式集② r=V²/(g·tanφ)"},
+  {cat:5,lvl:"one",calc:"旋回半径",q:"飛行速度20m/s、バンク角φ=30°（tan30°=0.58）で定常旋回。旋回半径に最も近いものは。g=9.8m/s²。",fml:"r = v² ÷ (g × tanφ)",o:["約50m","約70m","約90m","約110m"],a:1,e:"r=20²/(9.8×0.58)=400/5.684≒70m。速度が大きいほど（2乗で）旋回半径は大きくなる。",ref:"公式集② r=V²/(g·tanφ)"},
 
   // --- ③ 滑空距離 d ---
   {cat:5,lvl:"one",calc:"滑空距離",q:"揚抗比（L/D）15の機体が、高度100mから無推力で定常滑空した場合の滑空距離はおよそ何mか。",fml:"d = h × (L/D)  ／ tanγ = 1/(L/D)",o:["約750m","約1,000m","約1,500m","約2,250m"],a:2,e:"d=h×(L/D)=100×15=1500m。揚抗比L/Dは1m降下する間に何m前進できるかの比。滑空角γはtanγ=1/(L/D)＝1/15で約3.8°。",ref:"公式集③ d=h×(L/D)"},
@@ -407,9 +407,9 @@ const Q_CALC = [
   {cat:5,lvl:"one",calc:"フレネル",q:"周波数の単位をMHzからGHzに変換する方法として正しいものはどれか。",fml:"GHz = MHz × 0.001 ／ λ=3÷(GHz)÷10",o:["MHz × 1000","MHz × 0.001","MHz ÷ 0.001","MHz × 100"],a:1,e:"MHz×0.001＝GHz（1GHz=1000MHz）。例えば2400MHz×0.001=2.4GHz。波長λを求める式 λ=3÷(GHz)÷10 はGHz単位で計算するので、MHzで与えられたら先に変換する。",ref:"公式集④ MHz×0.001=GHz"},
 
   // --- ⑤ 水平到達距離 x ---
-  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度600mを飛行速度25m/sで水平飛行中、揚力を失い落下した。落下開始地点の真下から地上に墜落するまでの水平距離xはおよそ何mか。g=9.8m/s²。",fml:"x = V × √(2h ÷ g)",o:["約198m","約277m","約356m","約412m"],a:1,e:"①落下時間 t=√(2h/g)=√(2×600/9.8)=√122.4≒11.07s\n②x=V×t=25×11.07≒277m。機体を質点とみなし空気抵抗を無視した水平投射。",ref:"公式集⑤ x=V√(2h/g)"},
-  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度45mを飛行速度20m/sで水平飛行中に落下した場合の水平到達距離はおよそ何mか。g=9.8m/s²。",fml:"x = V × √(2h ÷ g)",o:["約40m","約61m","約82m","約100m"],a:1,e:"t=√(2×45/9.8)=√9.18≒3.03s、x=20×3.03≒61m。√の中身は2×高度÷重力加速度。落下時間に水平速度を掛ける。",ref:"公式集⑤ x=V√(2h/g)"},
-  {cat:5,lvl:"one",calc:"水平到達距離",q:"水平到達距離xの公式として正しいものはどれか（h:高度、V:速度、g:重力加速度）。",fml:"x = V × √(2h ÷ g)",o:["x = V × √(2h÷g)","x = V ÷ √(2h÷g)","x = h × √(2V÷g)","x = g × √(2h÷V)"],a:0,e:"x=V×√(2h/g)。落下時間 t=√(2h/g) に水平速度Vを掛ける形。ルートの中は「2×高度÷重力加速度」。記号配置のミスに注意。",ref:"公式集⑤ x=V√(2h/g)"},
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度600mを飛行速度25m/sで水平飛行中、揚力を失い落下した。落下開始地点の真下から地上に墜落するまでの水平距離xはおよそ何mか。g=9.8m/s²。",fml:"x = v × √(2h ÷ g)",o:["約198m","約277m","約356m","約412m"],a:1,e:"①落下時間 t=√(2h/g)=√(2×600/9.8)=√122.4≒11.07s\n②x=V×t=25×11.07≒277m。機体を質点とみなし空気抵抗を無視した水平投射。",ref:"公式集⑤ x=V√(2h/g)"},
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"高度45mを飛行速度20m/sで水平飛行中に落下した場合の水平到達距離はおよそ何mか。g=9.8m/s²。",fml:"x = v × √(2h ÷ g)",o:["約40m","約61m","約82m","約100m"],a:1,e:"t=√(2×45/9.8)=√9.18≒3.03s、x=20×3.03≒61m。√の中身は2×高度÷重力加速度。落下時間に水平速度を掛ける。",ref:"公式集⑤ x=V√(2h/g)"},
+  {cat:5,lvl:"one",calc:"水平到達距離",q:"水平到達距離xの公式として正しいものはどれか（h:高度、V:速度、g:重力加速度）。",fml:"x = v × √(2h ÷ g)",o:["x = V × √(2h÷g)","x = V ÷ √(2h÷g)","x = h × √(2V÷g)","x = g × √(2h÷V)"],a:0,e:"x=V×√(2h/g)。落下時間 t=√(2h/g) に水平速度Vを掛ける形。ルートの中は「2×高度÷重力加速度」。記号配置のミスに注意。",ref:"公式集⑤ x=V√(2h/g)"},
 ];
 
 BANK.push(...Q_RULES, ...Q_SYSTEM, ...Q_PILOT, ...Q_RISK, ...Q_CALC);
@@ -431,12 +431,12 @@ const CATS = {
 
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
-  {term:"揚力・推力・仕事率", formula:"W=L∝ρV² ／ T∝ρω² ／ W=T ／ P∝ρω³∝Tω", note:"水平飛行は<b>W=L∝ρV²</b>（揚力は速度の2乗）。回転翼の推力<b>T∝ρω²</b>。ホバリング時<b>W=T</b>。消費パワー<b>P∝ρω³∝Tω</b>。ρ一定なら推力∝ω²、仕事率∝ω³。"},
-  {term:"旋回半径 r", formula:"r = V² ÷ (g × tanφ)", note:"<b>φ=バンク角</b>。分子=速度の2乗、分母=g×tanφ。バンク角φの定常旋回では水平飛行の<b>1/cosφ 倍の揚力</b>が必要（φ=20°→1.06倍）。"},
-  {term:"滑空距離 d", formula:"d = h × (L/D) ／ tanγ = 1/(L/D)", note:"高度h×揚抗比(L/D)。<b>L/D=15・h=100m → 1500m</b>。滑空角γは tanγ=1/(L/D)。L/D=15ならγ≒3.8°。揚抗比が大きいほど遠くへ滑空。"},
-  {term:"フレネルゾーン半径 R", formula:"R=√(λ×(D/2)²×1/D)=√(λD/4)", note:"<b>D=送受信アンテナ間距離</b>。R=√(λD/4)。D=100m・2.4GHz→R≒1.77m。実際は<b>半径の60%（×0.6）</b>のアンテナ高さがあれば良好（1.77×0.6≒1.1m）。"},
-  {term:"水平到達距離 x", formula:"x = V × √(2h ÷ g)", note:"揚力を失った機体を質点とみなし空気抵抗無視。落下時間 t=√(2h/g) に水平速度Vを掛ける。√の中は2×高度÷重力加速度。"},
-  {term:"波長 λ の求め方", formula:"λ = c ÷ f = 3 ÷ (GHz) ÷ 10", note:"光速c=3×10⁸。2.4GHz→0.125m / 5.7GHz→0.053m。<b>MHz×0.001=GHz</b>（2400MHz=2.4GHz）。周波数が高いほど波長は短い。"},
+  {term:"揚力・推力・仕事率", formula:"W = L ∝ ρv² ／ T ∝ ρω² ／ W = T ／ P ∝ ρω³ ∝ Tω", note:"水平飛行は<b>W=L∝ρv²</b>（揚力は速度の2乗）。回転翼の推力<b>T∝ρω²</b>。ホバリング時<b>W=T</b>。消費パワー<b>P∝ρω³∝Tω</b>。ρ一定なら推力∝ω²、仕事率∝ω³。"},
+  {term:"旋回半径 r", formula:"r = v² / g tanφ", note:"<b>φ=バンク角</b>。分子=速度の2乗、分母=g×tanφ。バンク角φの定常旋回では水平飛行の<b>1/cosφ 倍の揚力</b>が必要（φ=20°→1.06倍）。"},
+  {term:"滑空距離 d", formula:"d = h × L/D", note:"高度h×揚抗比(L/D)。<b>L/D=15・h=100m → 1500m</b>。滑空角γは tanγ=1/(L/D)。L/D=15ならγ≒3.8°。揚抗比が大きいほど遠くへ滑空。"},
+  {term:"フレネルゾーン半径 R", formula:"R = √(λ × D/4)", note:"<b>D=送受信アンテナ間距離</b>。λ=c÷f÷10。D=100m・2.4GHz→R≒1.77m。"},
+  {term:"水平到達距離 x", formula:"x = v × √(2h/g)", note:"揚力を失った機体を質点とみなし空気抵抗無視。落下時間 t=√(2h/g) に水平速度vを掛ける。√の中は2×高度÷重力加速度。"},
+  {term:"波長 λ の求め方", formula:"λ = c ÷ f ÷ 10", note:"光速c=3×10⁸。2.4GHz→0.125m / 5.7GHz→0.053m。<b>MHz×0.001=GHz</b>（2400MHz=2.4GHz）。周波数が高いほど波長は短い。"},
 ];
 
 // ---------- 記号カード（表:記号 → 裏:意味） ----------
@@ -853,21 +853,19 @@ function renderSymbolTable(){
 function renderCalc(){
   Tview="calc";
   const sheets=[
-    {t:"① 滑空距離",ic:"🛬",when:"高度と揚抗比から滑空到達距離を求める",f:"d = h × L/D",n:"<b>高度h×揚抗比(L/D)</b>。L/D=15・h=100m → 1500m。揚抗比が大きいほど遠くへ滑空できる。"},
-    {t:"② 旋回半径",ic:"🛩️",when:"飛行速度とバンク角φから旋回半径を求める",f:"r = v² ÷ (g × tanφ)",n:"分子=速度の2乗、分母=g×tanφ(g=9.8)。tanφは問題文に与えられる(例 tan20°=0.36)。例: v=10,φ=20° → 10²/(9.8×0.36)≒28m。"},
-    {t:"③ 推力",ic:"🛞",when:"回転角速度の変化から推力を求める（ρ一定）",f:"T ∝ ρ × ω²　または<br>上昇後ω[rpm²] × T[kgf] ÷ 上昇前ω[rpm²]",n:"推力は<b>T∝ρω²</b>。空気密度ρ一定なら回転数ωの2乗に比例。例: 4000→6000rpm(1.5倍)で推力は1.5²=2.25倍。"},
-    {t:"④ 仕事率",ic:"⚡",when:"回転角速度の変化から仕事率を求める（ρ一定）",f:"P ∝ ρ × ω³",n:"仕事率は<b>P∝ρω³</b>。ρ一定なら回転数ωの3乗に比例。"},
-    {t:"⑤ 消費パワー",ic:"🔋",when:"密度・回転数・推力の関係",f:"P ∝ (ρ × ω³) ∝ (T × ω)",n:"消費パワーは<b>P∝ρω³∝Tω</b>。T∝ω²なのでP∝Tω＝ω³と一致する。"},
-    {t:"⑥ 水平到達距離",ic:"📐",when:"墜落するまでの水平距離を求める",f:"x = v × √(2h ÷ g)",n:"揚力を失った機体を質点とみなし空気抵抗無視。落下時間 t=√(2h/g) に水平速度vを掛ける。√の中は2×高度÷重力加速度。例: h=600m,v=25 → ≒277m。"},
-    {t:"⑦ フレネルゾーン半径",ic:"📡",when:"電波到達に必要な楕円体型の領域の半径",f:"λ = 3 ÷ [GHz] ÷ 10　（※ MHz × 0.001 = GHz）<br>R = √(λ × D ÷ 4)",n:"①<b>波長λ</b>=3÷周波数GHz÷10(2.4GHz→0.125m)。②<b>R=√(λ×D/4)</b>(D=アンテナ間距離)。D=100m・2.4GHz→1.77m。"},
-    {t:"⑧ 揚力",ic:"🪽",when:"水平定常飛行での重量・揚力・速度の関係",f:"W = L ∝ ρ × V²",n:"水平定常飛行では<b>W=L</b>（重量＝揚力）。揚力は<b>L∝ρV²</b>で速度Vの2乗に比例する。"},
-    {t:"⑨ バンク角に対する揚力の倍数",ic:"📂",when:"定常旋回で必要な揚力が水平飛行の何倍か",f:"1 ÷ cos[φ]",n:"バンク角φの定常旋回では、水平飛行に比べ<b>1/cosφ 倍</b>の揚力が必要。例: φ=20°ならcos20°=0.94なので1/0.94≒1.06倍。"},
+    {t:"① 旋回半径",ic:"🛩️",f:"r = v² / g tanφ<br>または　v² ÷ g ÷ tanφ"},
+    {t:"② フレネルゾーン半径",ic:"📡",f:"λ = c(光速) ÷ (f(使用周波数) × 10⁹)<br>または　c ÷ f ÷ 10<br>※ MHz × 0.001 = GHz<br>R = √(λ × D / 4)<br>または　√(λ × D ÷ 4)"},
+    {t:"③ 仕事率",ic:"⚡",f:"P ∝ ρ ω³ ∝ T ω　　W = T<br>※1　上昇後ω ÷ 上昇前ω × P<br>※2　(上昇後ω ÷ 上昇前ω)³ × P"},
+    {t:"④ 滑空距離",ic:"🛬",f:"d = h × L/D"},
+    {t:"⑤ 水平到達距離",ic:"📐",f:"x = v × √(2h/g)<br>または　v × √(2 × h ÷ g)"},
+    {t:"⑥ 推力",ic:"🛞",f:"T ∝ ρ × ω²　または<br>上昇後ω[rpm²] × T[kgf] ÷ 上昇前ω[rpm²]"},
+    {t:"⑦ バンク角に対する揚力の倍数",ic:"📂",f:"1 ÷ cos[φ]"},
   ];
   let h=`<div class="screen"><div class="sec-title">🧮 計算公式シート（一等の核心・教則準拠）</div>
-    <div class="explain" style="margin-bottom:16px">本番は計算5問。<b>2問以上の失点は致命的</b>です。公式と「数値を入れて解く手順」をセットで暗記しましょう。試験画面の電卓は使用可、持込不可。</div>`;
+    <div class="explain" style="margin-bottom:16px">本番は計算5問。<b>2問以上の失点は致命的</b>です。試験画面の電卓は使用可、持込不可。</div>`;
   for(const s of sheets){
-    h+=`<div class="ref-card"><h3>${s.ic} ${s.t}</h3><div class="when">${s.when}</div>
-      <div class="formula">${s.f}</div><div class="note">${s.n}</div></div>`;
+    h+=`<div class="ref-card"><h3>${s.ic} ${s.t}</h3>
+      <div class="formula">${s.f}</div></div>`;
   }
   h+=`<button class="btn primary" style="margin-top:6px" onclick="startQuiz('cat',5)">計算問題を解く →</button></div>`;
   main.innerHTML=h; main.scrollTop=0;
