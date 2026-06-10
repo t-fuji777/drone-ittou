@@ -188,8 +188,8 @@
   .flash .fk.fkok{background:var(--good);color:#04140a;border-color:var(--good)}
   .flash .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
   .flash .dformula{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc2);
-    border-radius:10px;padding:14px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:16px;letter-spacing:.02em;font-weight:600;
-    color:var(--acc2);margin-bottom:14px;line-height:1.7;text-align:center}
+    border-radius:10px;padding:14px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:14px;letter-spacing:0;font-weight:600;
+    color:var(--acc2);margin-bottom:14px;line-height:1.9;text-align:left}
   .flash .dmean{font-size:18px;font-weight:700;line-height:1.5;text-align:center;color:var(--ink);margin-bottom:12px}
   .flash .dunit{font-size:13px;color:var(--acc);text-align:center;font-weight:600;
     border-top:1px dashed var(--line);padding-top:11px}
@@ -431,12 +431,13 @@ const CATS = {
 
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
-  {term:"揚力・推力・仕事率", formula:"W = L ∝ ρv² ／ T ∝ ρω² ／ W = T ／ P ∝ ρω³ ∝ Tω", note:"水平飛行は<b>W=L∝ρv²</b>（揚力は速度の2乗）。回転翼の推力<b>T∝ρω²</b>。ホバリング時<b>W=T</b>。消費パワー<b>P∝ρω³∝Tω</b>。ρ一定なら推力∝ω²、仕事率∝ω³。"},
-  {term:"旋回半径 r", formula:"r = v² / g tanφ", note:"<b>φ=バンク角</b>。分子=速度の2乗、分母=g×tanφ。バンク角φの定常旋回では水平飛行の<b>1/cosφ 倍の揚力</b>が必要（φ=20°→1.06倍）。"},
-  {term:"滑空距離 d", formula:"d = h × L/D", note:"高度h×揚抗比(L/D)。<b>L/D=15・h=100m → 1500m</b>。滑空角γは tanγ=1/(L/D)。L/D=15ならγ≒3.8°。揚抗比が大きいほど遠くへ滑空。"},
-  {term:"フレネルゾーン半径 R", formula:"R = √(λ × D/4)", note:"<b>D=送受信アンテナ間距離</b>。λ=c÷f÷10。D=100m・2.4GHz→R≒1.77m。"},
-  {term:"水平到達距離 x", formula:"x = v × √(2h/g)", note:"揚力を失った機体を質点とみなし空気抵抗無視。落下時間 t=√(2h/g) に水平速度vを掛ける。√の中は2×高度÷重力加速度。"},
-  {term:"波長 λ の求め方", formula:"λ = c ÷ f ÷ 10", note:"光速c=3×10⁸。2.4GHz→0.125m / 5.7GHz→0.053m。<b>MHz×0.001=GHz</b>（2400MHz=2.4GHz）。周波数が高いほど波長は短い。"},
+  {term:"① 旋回半径", formula:"r = v² / g tanφ<br>または　v² ÷ g ÷ tanφ"},
+  {term:"② フレネルゾーン半径", formula:"λ = c(光速) ÷ (f(使用周波数) × 10⁹)<br>または　c ÷ f ÷ 10<br>※ MHz × 0.001 = GHz<br>R = √(λ × D / 4)<br>または　√(λ × D ÷ 4)"},
+  {term:"③ 仕事率", formula:"P ∝ ρ ω³ ∝ T ω　　W = T<br>※1　上昇後ω ÷ 上昇前ω × P<br>※2　(上昇後ω ÷ 上昇前ω)³ × P"},
+  {term:"④ 滑空距離", formula:"d = h × L/D"},
+  {term:"⑤ 水平到達距離", formula:"x = v × √(2h/g)<br>または　v × √(2 × h ÷ g)"},
+  {term:"⑥ 推力", formula:"T ∝ ρ × ω²　または<br>上昇後ω[rpm²] × T[kgf] ÷ 上昇前ω[rpm²]"},
+  {term:"⑦ バンク角に対する揚力の倍数", formula:"1 ÷ cos[φ]"},
 ];
 
 // ---------- 記号カード（表:記号 → 裏:意味） ----------
@@ -788,7 +789,7 @@ function renderDeck(){
   const frontSize = isF ? "22px" : "44px";
   let backHtml;
   if(isF){
-    backHtml = `<div class="dformula">${c.formula}</div><div class="a" style="font-size:13px;text-align:center">${c.note}</div>`;
+    backHtml = `<div class="dformula">${c.formula}</div>${c.note?`<div class="a" style="font-size:13px;text-align:center">${c.note}</div>`:''}`;
   }else{
     const en = (c.en && c.en!=="—") ? `<div class="dunit" style="color:var(--acc2);border:none;padding-top:0">${c.en}</div>` : '';
     const rd = c.read ? `<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:10px">読み: ${c.read}</div>` : '';
@@ -820,7 +821,18 @@ function renderDeck(){
   main.innerHTML=h; main.scrollTop=0;
 }
 function flipDeck(){ D.flipped=!D.flipped; $("#flash").classList.toggle("flipped",D.flipped); }
-function nextDeck(){ D.i=(D.i+1)%D.list.length; D.flipped=false; renderDeck(); }
+function nextDeck(){
+  if(D.i+1 >= D.list.length){
+    // 一周したら再シャッフル（直前のカードが先頭に来ないように）
+    const last = D.list[D.i];
+    let next = shuffle(D.list);
+    if(next.length>1 && next[0]===last){ [next[0],next[next.length-1]]=[next[next.length-1],next[0]]; }
+    D.list = next; D.i = 0;
+  } else {
+    D.i++;
+  }
+  D.flipped=false; renderDeck();
+}
 function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
 
 // ============================================================
