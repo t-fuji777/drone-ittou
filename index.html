@@ -189,7 +189,7 @@
   .flash .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
   .flash .dformula{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc2);
     border-radius:10px;padding:14px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:14px;letter-spacing:0;font-weight:600;
-    color:var(--acc2);margin-bottom:14px;line-height:1.9;text-align:left}
+    color:var(--acc2);margin-bottom:14px;line-height:1.9;text-align:left;overflow-wrap:anywhere}
   .flash .dmean{font-size:18px;font-weight:700;line-height:1.5;text-align:center;color:var(--ink);margin-bottom:12px}
   .flash .dunit{font-size:13px;color:var(--acc);text-align:center;font-weight:600;
     border-top:1px dashed var(--line);padding-top:11px}
@@ -244,7 +244,7 @@
   .ref-card .when{font-size:10.5px;color:var(--sub);margin-bottom:11px}
   .ref-card .formula{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc2);
     border-radius:9px;padding:13px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:14px;letter-spacing:0;
-    color:var(--acc2);margin-bottom:10px;line-height:2;font-weight:600;white-space:normal;word-break:keep-all}
+    color:var(--acc2);margin-bottom:10px;line-height:2;font-weight:600;white-space:normal;overflow-wrap:anywhere;word-break:normal}
   .ref-card .note{font-size:12px;color:var(--sub);line-height:1.6}
   .ref-card .note b{color:var(--ink)}
 
@@ -283,6 +283,9 @@
 .calc-keys button{padding:14px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;font-size:17px;font-weight:700;cursor:pointer}
 .calc-keys button:active{background:var(--acc);color:#04201c}
 .calc-keys .calc-eq{background:var(--acc);color:#04201c;border-color:var(--acc)}
+.formula .fl,.dformula .fl{overflow-wrap:anywhere;word-break:normal;line-height:1.95}
+.formula .fn,.dformula .fn{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.5;letter-spacing:0;overflow-wrap:anywhere;word-break:normal;margin-top:1px}
+.formula .fg,.dformula .fg{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.5;overflow-wrap:anywhere;word-break:normal;margin-top:8px}
 </style>
 </head>
 <body>
@@ -713,7 +716,24 @@ const Q_VARIANT3 = [
   {cat:4,lvl:"one",q:"〔一等〕空中リスクの低減における「戦術的対策」の説明として正しいものはどれか。",o:["飛行中に航空機との衝突を回避するための対策","飛行前に遭遇確率を下げる対策","機体を購入する際の対策","保険に加入する対策"],a:0,e:"戦略的対策は飛行前に航空機との遭遇確率やリスク暴露時間を下げる対策（時間帯・境界の限定等）。戦術的対策は飛行中に衝突を回避するための対策。",ref:"教則 第6章 6.1.6 リスク評価手法（空中リスク）（p.69）"},
   {cat:4,lvl:"common",q:"回転翼航空機（マルチローター）の離陸地点と操縦者・補助者との推奨距離として正しいものはどれか。",o:["3m以上（取扱説明書に推奨距離があればそれに従う）","必ず20m以上","必ず100m以上","距離の制限はない"],a:0,e:"マルチローターの離陸地点は操縦者・補助者と3m以上離す（取扱説明書に推奨距離があればそれに従う）。飛行機・ヘリは20m以上が推奨され、周囲の物件からは30m以上離す。",ref:"教則 第6章 6.3.3 回転翼航空機（マルチローター）（p.77）"},
 ];
-BANK.push(...Q_RULES, ...Q_RULES_ADD, ...Q_RULES_ADD2, ...Q_RULES_ADD3, ...Q_SYSTEM, ...Q_SYSTEM_ADD, ...Q_SYSTEM_ADD2, ...Q_SYSTEM_ADD3, ...Q_PILOT, ...Q_PILOT_ADD, ...Q_PILOT_ADD2, ...Q_PILOT_ADD3, ...Q_RISK, ...Q_RISK_ADD, ...Q_RISK_ADD2, ...Q_RISK_ADD3, ...Q_CALC, ...Q_VARIANT, ...Q_VARIANT2, ...Q_VARIANT3);
+
+// ===== 不適切（誤っているもの）を選べ形式（教則準拠・既存IDの後ろに追加） =====
+const Q_NEG = [
+  {cat:1,lvl:"common",q:"次の罰則に関する記述のうち、誤っている（不適切な）ものはどれか。",o:["事故発生時に危険を防止する措置を講じなかった場合の罰則は科料のみで、懲役は科されない","事故等の際に危険を防止する措置を講じなかった場合は、2年以下の懲役又は100万円以下の罰金の対象となる","アルコール又は薬物の影響下での飛行は、1年以下の懲役又は30万円以下の罰金の対象となる","機体を登録せずに飛行させた場合は、1年以下の懲役又は50万円以下の罰金の対象となる"],a:0,e:"危険防止措置を講じなかった場合は2年以下の懲役又は100万円以下の罰金が定められており、「科料のみ・懲役なし」は誤り。",ref:"教則 第3章 3.1.2 罰則（p.13）",neg:true},
+  {cat:1,lvl:"common",q:"無人航空機操縦者技能証明の行政処分（点数制）に関する記述のうち、誤っているものはどれか。",o:["点数が1〜2点であっても、ただちに技能証明が取り消される","点数が15点以上となった場合は技能証明の効力が取り消される","文書警告となるのは3〜5点である","行政処分の基準には点数制が採用されている"],a:0,e:"1〜2点は口頭注意にとどまる。取消となるのは15点以上。",ref:"教則 第3章 3.1.2 処分等区分表（p.13）",neg:true},
+  {cat:1,lvl:"common",q:"空港等の制限表面に関する記述のうち、誤っているものはどれか。",o:["全ての空港に円錐表面が必ず設定される","全ての空港に設定されるのは進入表面・水平表面・転移表面である","主要な空港にはこれに加え円錐表面・延長進入表面・外側水平表面が設定される","制限表面の上空での無人航空機の飛行は、原則として許可が必要となる"],a:0,e:"円錐表面は主要な空港に追加される3表面の一つ。全空港共通は進入・水平・転移の3表面。",ref:"教則 第3章 3.1.1 空港の制限表面（p.7）",neg:true},
+  {cat:1,lvl:"common",q:"飛行日誌に関する記述のうち、誤っているものはどれか。",o:["飛行日誌の3種の記録には「定期点検記録」が含まれる","飛行日誌は飛行記録・日常点検記録・点検整備記録の3記録で構成される","操縦者は飛行ごとに飛行記録を記載する義務がある","日常点検記録には点検の実施結果を記載する"],a:0,e:"3記録は飛行記録・日常点検記録・点検整備記録。「定期点検記録」は誤り。",ref:"教則 第3章 飛行日誌（p.23）",neg:true},
+  {cat:1,lvl:"common",q:"リモートID機能に関する記述のうち、誤っているものはどれか。",o:["重量100g以上の機体であれば常にリモートIDの搭載が免除される","リモートID機能は機体の識別情報を発信する","機体登録と併せてリモートID機能の搭載が原則として義務付けられる","あらかじめ登録した特定の場所での飛行など、一定の場合は搭載が免除される"],a:0,e:"100g以上は登録・リモートID義務の対象。常時免除ではなく、免除は限定的な場合のみ。",ref:"教則 第3章 3.1.2 リモートID機能の搭載の義務（p.13）",neg:true},
+  {cat:2,lvl:"common",q:"GNSS（GPS等）に関する記述のうち、誤っているものはどれか。",o:["GNSSは屋内でも常に安定して高精度に測位できる","GNSSにより自己位置を把握し、位置保持や自動帰還の精度向上が図れる","測位には最低4機の衛星を捕捉する必要がある","一般に水平方向に比べて高度（垂直）方向の誤差が大きい"],a:0,e:"GNSSは衛星電波を受信するため、屋内や障害物の多い環境では受信が困難で測位が不安定になる。",ref:"教則 第4章 機体の構成（測位）（p.50）",neg:true},
+  {cat:2,lvl:"common",q:"プロポと機体の通信に使われる2.4GHz帯に関する記述のうち、誤っているものはどれか。",o:["2.4GHz帯は障害物を回り込みやすく、遮蔽物に強い","2.4GHz帯は直進性が高く、障害物の影響を受けやすい","2.4GHz帯はプロポと機体の通信に広く使われる","一般に周波数が高いほど直進性が強くなる傾向がある"],a:0,e:"周波数が高いほど直進性が強く障害物の影響を受けやすい。2.4GHzは遮蔽に弱い。",ref:"教則 第4章 無線・電波（p.47）",neg:true},
+  {cat:1,lvl:"common",q:"無人航空機で用いる電波（電波法）に関する記述のうち、誤っているものはどれか。",o:["小電力の2.4GHz帯を使う場合でも、無線局の免許と無線従事者資格が常に必要である","免許・登録が不要な小電力の周波数帯は73MHz帯・920MHz帯・2.4GHz帯（小電力）である","920MHz帯の出力は20mW程度である","高出力の携帯局等の利用には第三級陸上特殊無線技士以上の資格が必要となる"],a:0,e:"小電力の2.4GHz帯は免許・資格不要で利用できる。資格・免許が必要なのは高出力の携帯局等。",ref:"教則 第3章 3.2.2 電波法（p.30）",neg:true},
+  {cat:3,lvl:"common",q:"特定飛行の許可・承認申請の期限に関する記述のうち、誤っているものはどれか。",o:["カテゴリーⅢ飛行の申請は、飛行の前日までに行えばよい","カテゴリーⅡ飛行の申請は飛行開始予定日の10開庁日前までに行う","カテゴリーⅢ飛行の申請は飛行開始予定日の20開庁日前までに行う","原則として飛行開始までに許可・承認を受けておく必要がある"],a:0,e:"カテゴリーⅢは20開庁日前まで。前日では間に合わない。",ref:"教則 第5章 5.1.3 飛行申請（p.54）",neg:true},
+  {cat:3,lvl:"common",q:"ガソリンエンジン機の燃料の取扱いに関する記述のうち、誤っているものはどれか。",o:["ガソリンはポリタンク等、任意の容器で自由に運搬してよい","ガソリンは危険物のため、運搬には消防法で定められた専用容器（22リットル以下）を用いる","ガソリンは引火性が高く、火気を避けて取り扱う","給油時は周囲の火気や静電気に注意する"],a:0,e:"ガソリンは危険物のため、消防法で定められた専用容器（22L以下）で運搬する必要がある。",ref:"教則 第5章 5.1.2 ガソリンエンジン機の注意事項（p.52）",neg:true},
+  {cat:4,lvl:"one",q:"〔一等〕リスク評価における「ロバスト性」に関する記述のうち、誤っているものはどれか。",o:["ロバスト性は、安全性の水準と保証の水準の高い方に準じて評価する","ロバスト性は、安全性の水準と保証の水準の低い方に準じて評価する","リスク低減のための運航上の措置（立入管理等）を講じる","リスク評価では地上リスクと空中リスクを評価する"],a:0,e:"ロバスト性は安全性の水準と保証の水準の「低い方」に準じて評価する。高い方ではない。",ref:"教則 第6章 6.1.6 ロバスト性（p.68）",neg:true},
+  {cat:1,lvl:"common",q:"無人航空機の重大インシデントに関する記述のうち、誤っているものはどれか。",o:["機体表面のわずかな塗装の擦り傷は、重大インシデントに該当する","無人航空機の制御が不能となった事態は重大インシデントに該当する","航空機との衝突又は接触のおそれがあったと認められる事態は重大インシデントに該当する","無人航空機による人の負傷（重傷に至らないもの）は重大インシデントに該当する"],a:0,e:"重大インシデントは制御不能・航空機との衝突接触のおそれ・人の負傷・発火等。軽微な塗装傷は該当しない。",ref:"教則 第3章 3.1.2 重大インシデント（p.13）",neg:true}
+];
+
+BANK.push(...Q_RULES, ...Q_RULES_ADD, ...Q_RULES_ADD2, ...Q_RULES_ADD3, ...Q_SYSTEM, ...Q_SYSTEM_ADD, ...Q_SYSTEM_ADD2, ...Q_SYSTEM_ADD3, ...Q_PILOT, ...Q_PILOT_ADD, ...Q_PILOT_ADD2, ...Q_PILOT_ADD3, ...Q_RISK, ...Q_RISK_ADD, ...Q_RISK_ADD2, ...Q_RISK_ADD3, ...Q_CALC, ...Q_VARIANT, ...Q_VARIANT2, ...Q_VARIANT3,...Q_NEG);
 // assign stable ids
 BANK.forEach((x,i)=>x.id=i);
 
@@ -764,13 +784,13 @@ const CATS = {
 
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
-  {term:"① 水平定常飛行", formula:"W = L ∝ ρ × V²<br>※ 機体重量 = 揚力<br>※ 揚力は空気密度ρに比例・速度Vの2乗に比例<br>速度: V = √(L ÷ ρ)", note:"語呂「水曜PV、2回見た」"},
-  {term:"② 消費パワー（仕事率）", formula:"P ∝ ρ × ω³ ∝ T × ω<br>※ 消費パワーは回転角速度ωの3乗に比例<br>T = ρ × ω² → ω = √(T ÷ ρ)<br>重量2倍 → √2³ ≒ 2.8倍", note:"語呂「消費パワー、3倍」"},
-  {term:"③ ホバリング・空気密度", formula:"W = T ∝ ρ × ω²<br>※ 機体重量 = 推力<br>※ 推力は空気密度ρに比例・角速度ωの2乗に比例<br>角速度: ω = √(T ÷ ρ)", note:"語呂「押しのパワー、2倍」"},
-  {term:"④ 定常旋回飛行（バンク角）", formula:"r = V² ÷ (g × tanφ)<br>速度: V = √(r × g × tanφ)<br>バンク角: tanφ = (V² ÷ r) ÷ g<br>※ 速度大→旋回半径大／バンク角大→旋回半径小<br>必要揚力 = 水平定常の揚力 × 1 ÷ cosφ", note:"語呂「千回、絨毯ぶっつけた」"},
-  {term:"⑤ 定常滑空飛行（滑空角・滑空距離）", formula:"揚抗比 = L ÷ D<br>滑空距離: d = h × (L ÷ D)<br>滑空角: tanγ = 1 ÷ (L ÷ D)<br>高度: h = d ÷ (L ÷ D)<br>※ 揚抗比が大きいほど距離長・滑空角小", note:"語呂「カッコイイきゅうりに高揚」「柿食う客は、コーヒーもぶんどる」"},
-  {term:"⑥ 水平到達距離", formula:"x = v × √(2h ÷ g)<br>落下時間: t = √(2h ÷ g)<br>高度: h = (x² ÷ v²) × (g ÷ 2)<br>※ 速度大・高度大→水平距離長", note:"語呂「みずみずしいキュウリが生えると自分で2個食べます」"},
-  {term:"⑦ フレネルゾーン", formula:"λ = 光速(3×10⁸) ÷ 周波数(Hz)<br>r = √((λ × D1 × D2) ÷ D) = √(λD ÷ 4)<br>必要アンテナ高 = r × 0.6<br>※ MHz × 0.001 = GHz<br>※ 波長長(周波数低)・距離長→半径大／D1=D2で最大", note:"語呂「寝るとデブはちょーデブデブ」"},
+  {term:"水平定常飛行の計算", formula:"【公式】W=L∝ρV²<br>①揚力は何倍<br>　L ＝ρ×V²<br>②速度は何倍<br>　V²＝L ／ρ<br>　V ＝±√(L ／ρ)<br>　V ＝√(L ／ρ)<br>③水平定常飛行ができる速度<br>　V²＝L ／ρ<br>　V ＝±√(L ／ρ)<br>　X(km/h) ×√(L ／ρ)＝ 〇〇km/h<br>※機体重量＝揚力<br>※揚力は空気密度に比例する<br>※揚力は速度の２乗に比例する<br>※水曜PV、２回見た（公式語呂）"},
+  {term:"消費パワーの計算", formula:"【公式】P∝ρω³∝Tω<br>①機体重量(または空気密度)が変わった時にホバリングする消費パワーは何倍<br>　T ＝ρ×ω²<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　P ＝ρ×ω³<br>※消費パワーは回転角速度の３乗に比例する<br>※消費パワー、３倍（公式語呂）"},
+  {term:"ホバリングの計算、空気密度の計算", formula:"【公式】W=T∝ρω²<br>①推力は何倍<br>　T ＝ρ×ω²<br>②改造後はrad/sでホバリング<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　ω(rad/s) ×√(T ／ρ)＝〇〇rad/s<br>③A高度の何倍でＢ高度でホバリング<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　ω ＝√(T ／ρ)<br>※機体重量＝推力<br>※推力は空気密度に比例する<br>※推力は回転角速度の２乗に比例する<br>※押しのパワー、２倍（公式語呂）"},
+  {term:"定常旋回飛行(バンク角)の計算", formula:"【公式】r=V²／g×tanφ<br>①飛行機の速度は何s/m<br>　V²＝r×g×tanφ<br>　V ＝±r×g×tanφ<br>　V ＝r×g×tanφ<br>②バンク角は何°<br>　g×tanφ＝V²／r<br>　tanφ＝(V²／r)／g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる<br>※千回、絨毯ぶっつけた（公式語呂）<br>【公式】定常旋回飛行の揚力＝水平定常飛行の揚力×1／cosφ<br>※旋回するにはより大きな揚力が必要"},
+  {term:"定常滑空飛行(滑空角、滑空距離)の計算", formula:"【公式】揚抗比＝L／D<br>※揚抗比が大きいと滑空距離は長くなる<br>【公式】tanφ＝1／(L／D)<br>※揚抗比が大きいほど、滑空角は小さくなる<br>※柿食う客は、コーヒーもぶんどる（語呂覚え）<br>【公式】d＝h×(L／D)<br>①エンジンを停止するタイミングは高度何m<br>　h＝d／(L／D)<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる<br>※カッコイイきゅうりに高揚（公式語呂）"},
+  {term:"水平到達距離の計算", formula:"【公式】x=v√(2h／g)<br>①地上落下距離を抑えたい時の高度何m<br>　x／v　＝√(2×h／g)<br>　x²／v²＝2×h／g<br>　x²／v²×g／2＝h<br>※速度が大きいほど、水平距離は長くなる<br>※高度が高いほど、水平距離は長くなる<br>※みずみずしいキュウリが生えると自分で２個食べます（公式語呂）"},
+  {term:"フレネルゾーンの計算", formula:"【公式】λ=光の速さ(m/s)／周波数(Hz)<br>※光速度：3×10⁸m/s<br>※周波数：2.4×10⁹Hz<br>　10KHz＝10×10³Hz<br>　73MHz＝73×10⁶Hz<br>　2.4GHz＝2.4×10⁹Hz<br>※波長：0.125m → 12.5cm<br>【公式】r=√((λ×D1×D2)／D)　または　r=√(λ×D／4)<br>①何ｍ地点に障害物がある時、そのフレネルゾーン半径60%の値<br>　r＝√((λ×D1×D2)／D)×0.6<br>※波長が長い（周波数が低い）と半径は大きくなる<br>※距離が長いと半径は大きくなる<br>※D1=D2の時、半径は最大となる<br>※寝るとデブはちょーデブデブ（公式語呂）"},
 ];
 
 // ---------- 記号カード（表:記号 → 裏:意味） ----------
@@ -841,6 +861,7 @@ function refreshHeader(){
 function renderHome(){
   Tview="home";
   let h=`<div class="screen">`;
+  if(hasResume()) h+=resumeCardHTML();
 
   // 学習モード（教則を順番に暗記・即時フィードバック・三択CBT）
   h+=`<div class="sec-title">学習モード（教則を順番に暗記）</div><div class="modes">`;
@@ -883,6 +904,40 @@ function learnChapterMenu(){
 //  QUIZ ENGINE
 // ============================================================
 let Q={list:[],i:0,sel:null,answered:false,correct:0,wrongIds:[],mode:"",timer:0,tInt:null,mock:false,learn:false,view3:[]};
+
+// ---------- 中断/再開セッション（リロード・SW更新後も継続） ----------
+function saveSession(){
+  if(!Q.list||!Q.list.length) return;
+  if(Q.mode==="result") return;
+  S.session={ ids:Q.list.map(q=>q.id), i:Q.i, correct:Q.correct, wrongIds:Q.wrongIds.slice(),
+    mode:Q.mode, mock:Q.mock, learn:Q.learn, timer:Q.timer, n:BANK.length, ts:Date.now() };
+  save();
+}
+function clearSession(){ if(S.session){ delete S.session; save(); } }
+function hasResume(){ const s=S.session; return !!(s && s.ids && s.ids.length && (s.i||0) < s.ids.length); }
+function discardSession(){ clearSession(); renderHome(); setNavActive("home"); }
+function resumeSession(){
+  const s=S.session;
+  if(!s||!s.ids){ renderHome(); setNavActive("home"); return; }
+  const list=s.ids.map(id=>BANK[id]).filter(Boolean);
+  if(list.length<s.ids.length*0.5){ clearSession(); toast("再開データを更新できませんでした"); renderHome(); setNavActive("home"); return; }
+  const i=Math.min(s.i||0, list.length-1);
+  Q={ list, i, sel:null, answered:false, correct:s.correct||0, wrongIds:(s.wrongIds||[]).slice(),
+      mode:s.mode||"cat", timer:s.timer||0, tInt:null, mock:!!s.mock, learn:!!s.learn, view3:snap3(list) };
+  renderQuiz();
+  if(Q.mock && Q.timer>0){ tickTimer(); }
+}
+function resumeCardHTML(){
+  const s=S.session, total=s.ids.length, pos=Math.min((s.i||0)+1,total);
+  const ml={learn:"学習モード",cat:"分野別演習",review:"復習",mock:"本番模試"}[s.mode]||"演習";
+  return `<div class="ref-card" style="border:1px solid var(--acc);margin-bottom:14px">
+    <h3 style="color:var(--ink);font-size:13px">中断した${ml}があります</h3>
+    <div class="note" style="margin-top:4px">${pos} / ${total}問まで進行（正解 ${s.correct||0}）</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn primary" style="flex:1" onclick="resumeSession()">続きから再開</button>
+      <button class="btn ghost" style="flex:none;padding:9px 16px" onclick="discardSession()">破棄</button>
+    </div></div>`;
+}
 
 // 出題リストに対し、各問の3択スナップショット（opts/ans）を生成して保持。
 // これにより「毎回ランダムな選択肢・配置」かつ採点が安定する。
@@ -964,6 +1019,7 @@ function renderQuiz(){
   main.innerHTML=h; main.scrollTop=0;
   if(q.cat===5) calcExpr='';
   if(Q.mock){ tickTimer(); }
+  saveSession();
 }
 // ---------- CBT電卓（計算問題用・四則＋√） ----------
 let calcExpr='';
@@ -1064,7 +1120,7 @@ function quitQuiz(){
 }
 
 function finishQuiz(){
-  Tview="result"; clearInterval(Q.tInt);
+  Tview="result"; clearInterval(Q.tInt); clearSession();
   const total=Q.list.length, correct=Q.correct, wrong=total-correct;
   const pct=Math.round(correct/total*100);
   // 学習モードは合否でなく「一巡完了」として表示
@@ -1136,7 +1192,7 @@ function renderDeck(){
   const frontSize = isF ? "22px" : "44px";
   let backHtml;
   if(isF){
-    backHtml = `<div class="dformula">${c.formula}</div>${c.note?`<div class="a" style="font-size:13px;text-align:center">${c.note}</div>`:''}`;
+    backHtml = `<div class="dformula">${fmlHTML(c.formula)}</div>${c.note?`<div class="a" style="font-size:13px;text-align:center">${c.note}</div>`:''}`;
   }else{
     const en = (c.en && c.en!=="—") ? `<div class="dunit" style="color:var(--acc2);border:none;padding-top:0">${c.en}</div>` : '';
     const rd = c.read ? `<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:10px">読み: ${c.read}</div>` : '';
@@ -1209,13 +1265,24 @@ function renderSymbolTable(){
 // ============================================================
 //  CALC FORMULA SHEET
 // ============================================================
+function fmlHTML(str){
+  return String(str).split("<br>").map(function(ln){
+    var t=ln.trim();
+    if(t.indexOf("「公式語呂」")>=0||t.indexOf("（公式語呂）")>=0||t.indexOf("（語呂覚え）")>=0){
+      var g=t.replace(/^※/,"").replace("（公式語呂）","").replace("（語呂覚え）","").trim();
+      return '<div class="fg">語呂「'+g+'」</div>';
+    }
+    if(t.charAt(0)==="※") return '<div class="fn">'+ln+'</div>';
+    return '<div class="fl">'+ln+'</div>';
+  }).join("");
+}
 function renderCalc(){
   Tview="calc";
   let h=`<div class="screen"><div class="sec-title">計算公式シート（一等の核心）</div>
     <div class="explain" style="margin-bottom:16px">本番は計算5問。<b>2問以上の失点は致命的</b>です。試験画面の電卓は使用可、持込不可。各公式の逆算・語呂も併記。</div>`;
   for(const s of FORMULA_CARDS){
     h+=`<div class="ref-card"><h3>${s.term}</h3>
-      <div class="formula">${s.formula}</div>${s.note?`<div class="note" style="margin-top:8px;color:var(--acc2)">${s.note}</div>`:''}</div>`;
+      <div class="formula">${fmlHTML(s.formula)}</div>${s.note?`<div class="note" style="margin-top:8px;color:var(--acc2)">${s.note}</div>`:''}</div>`;
   }
   h+=`<button class="btn primary" style="margin-top:6px" onclick="startQuiz('cat',5)">計算問題を解く →</button></div>`;
   main.innerHTML=h; main.scrollTop=0;
