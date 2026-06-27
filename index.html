@@ -286,6 +286,15 @@
 .formula .fl,.dformula .fl{overflow-wrap:anywhere;word-break:normal;line-height:1.95}
 .formula .fn,.dformula .fn{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.5;letter-spacing:0;overflow-wrap:anywhere;word-break:normal;margin-top:1px}
 .formula .fg,.dformula .fg{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.5;overflow-wrap:anywhere;word-break:normal;margin-top:8px}
+.fex{color:var(--ink);font-size:11px;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;letter-spacing:0}
+.formula .fh,.dformula .fh{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.65;word-break:normal;overflow-wrap:anywhere;margin-bottom:1px}
+.formula .fl,.dformula .fl{font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.formula .fn,.dformula .fn{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.55;word-break:normal;overflow-wrap:anywhere;margin-top:2px}
+.fex{color:var(--ink);font-size:11px;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;word-break:normal;overflow-wrap:anywhere}
+.formula .d0,.dformula .d0{padding-left:0}
+.formula .d1,.dformula .d1{padding-left:1.6em}
+.formula .d2,.dformula .d2{padding-left:3.0em}
+.formula .d3,.dformula .d3{padding-left:4.4em}
 </style>
 </head>
 <body>
@@ -784,13 +793,16 @@ const CATS = {
 
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
-  {term:"水平定常飛行の計算", formula:"【公式】W=L∝ρV²<br>①揚力は何倍<br>　L ＝ρ×V²<br>②速度は何倍<br>　V²＝L ／ρ<br>　V ＝±√(L ／ρ)<br>　V ＝√(L ／ρ)<br>③水平定常飛行ができる速度<br>　V²＝L ／ρ<br>　V ＝±√(L ／ρ)<br>　X(km/h) ×√(L ／ρ)＝ 〇〇km/h<br>※機体重量＝揚力<br>※揚力は空気密度に比例する<br>※揚力は速度の２乗に比例する<br>※水曜PV、２回見た（公式語呂）"},
-  {term:"消費パワーの計算", formula:"【公式】P∝ρω³∝Tω<br>①機体重量(または空気密度)が変わった時にホバリングする消費パワーは何倍<br>　T ＝ρ×ω²<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　P ＝ρ×ω³<br>※消費パワーは回転角速度の３乗に比例する<br>※消費パワー、３倍（公式語呂）"},
-  {term:"ホバリングの計算、空気密度の計算", formula:"【公式】W=T∝ρω²<br>①推力は何倍<br>　T ＝ρ×ω²<br>②改造後はrad/sでホバリング<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　ω(rad/s) ×√(T ／ρ)＝〇〇rad/s<br>③A高度の何倍でＢ高度でホバリング<br>　ω²＝T ／ρ<br>　ω ＝±√(T ／ρ)<br>　ω ＝√(T ／ρ)<br>※機体重量＝推力<br>※推力は空気密度に比例する<br>※推力は回転角速度の２乗に比例する<br>※押しのパワー、２倍（公式語呂）"},
-  {term:"定常旋回飛行(バンク角)の計算", formula:"【公式】r=V²／g×tanφ<br>①飛行機の速度は何s/m<br>　V²＝r×g×tanφ<br>　V ＝±r×g×tanφ<br>　V ＝r×g×tanφ<br>②バンク角は何°<br>　g×tanφ＝V²／r<br>　tanφ＝(V²／r)／g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる<br>※千回、絨毯ぶっつけた（公式語呂）<br>【公式】定常旋回飛行の揚力＝水平定常飛行の揚力×1／cosφ<br>※旋回するにはより大きな揚力が必要"},
-  {term:"定常滑空飛行(滑空角、滑空距離)の計算", formula:"【公式】揚抗比＝L／D<br>※揚抗比が大きいと滑空距離は長くなる<br>【公式】tanφ＝1／(L／D)<br>※揚抗比が大きいほど、滑空角は小さくなる<br>※柿食う客は、コーヒーもぶんどる（語呂覚え）<br>【公式】d＝h×(L／D)<br>①エンジンを停止するタイミングは高度何m<br>　h＝d／(L／D)<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる<br>※カッコイイきゅうりに高揚（公式語呂）"},
-  {term:"水平到達距離の計算", formula:"【公式】x=v√(2h／g)<br>①地上落下距離を抑えたい時の高度何m<br>　x／v　＝√(2×h／g)<br>　x²／v²＝2×h／g<br>　x²／v²×g／2＝h<br>※速度が大きいほど、水平距離は長くなる<br>※高度が高いほど、水平距離は長くなる<br>※みずみずしいキュウリが生えると自分で２個食べます（公式語呂）"},
-  {term:"フレネルゾーンの計算", formula:"【公式】λ=光の速さ(m/s)／周波数(Hz)<br>※光速度：3×10⁸m/s<br>※周波数：2.4×10⁹Hz<br>　10KHz＝10×10³Hz<br>　73MHz＝73×10⁶Hz<br>　2.4GHz＝2.4×10⁹Hz<br>※波長：0.125m → 12.5cm<br>【公式】r=√((λ×D1×D2)／D)　または　r=√(λ×D／4)<br>①何ｍ地点に障害物がある時、そのフレネルゾーン半径60%の値<br>　r＝√((λ×D1×D2)／D)×0.6<br>※波長が長い（周波数が低い）と半径は大きくなる<br>※距離が長いと半径は大きくなる<br>※D1=D2の時、半径は最大となる<br>※寝るとデブはちょーデブデブ（公式語呂）"},
+  {term:"揚力の計算", formula:"【公式】機体重量=揚力∝空気密度×速度²<br>　記号式：W=L∝ρV²<br>　① V²=L /ρ　例：速度は何倍<br>　　V =±√(L /ρ)<br>　　V =√(L /ρ)"},
+  {term:"消費パワーの計算", formula:"【公式】消費パワー∝空気密度×回転角速度³∝推力×回転角速度<br>　記号式：P∝ρω³∝Tω<br>　①T  =ρ×ω²　例：ホバリングをするための消費パワーは何倍<br>　　ω²=T /ρ<br>　　ω =±√(T /ρ)<br>　　P  =ρ×ω³"},
+  {term:"推力、ホバリングの計算", formula:"【公式】機体重量=推力∝空気密度×回転角速度²<br>　記号式：W=T∝ρω²<br>　①T =ρ×ω²　例：推力は何倍<br>　②ω²=T /ρ　例：改造後はrad/sでホバリング<br>　　ω =±√(T /ρ)<br>　　ω(rad/s) ×√(T /ρ)=〇〇rad/s<br>　③ω²=T /ρ　例：何倍で〇高度でホバリング<br>　　ω =±√(T /ρ)<br>　　ω =√(T /ρ)"},
+  {term:"旋回半径(バンク角)の計算", formula:"【公式】旋回半径=速度²/(重力加速度×tan〇°)<br>　記号式：r=V²/g×tanφ<br>　①V²=r×g×tanφ　例：飛行機の速度は何s/m<br>　　V =±r×g×tanφ<br>　　V =r×g×tanφ<br>　②g×tanφ=V²/r　例：バンク角は何°<br>　　g×tanφ=V²/r<br>　　　tanφ=(V²/r)/g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる"},
+  {term:"水平定常飛行の揚力の計算", formula:"【公式】定常旋回飛行の揚力=水平定常飛行の揚力×1/cosφ<br>※旋回するにはより大きな揚力が必要"},
+  {term:"滑空距離の計算", formula:"【公式】滑空距離=高度×揚抗比<br>　記号式：d=h×(L/D)<br>　①h=d/(L/D)　例：エンジンを停止するタイミングは高度何m<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる"},
+  {term:"滑空角の計算", formula:"【公式】滑空角=1/揚抗比<br>　記号式：tanφ=1/(L/D)<br>※揚抗比が大きいほど、滑空角は小さくなる"},
+  {term:"水平到達距離の計算", formula:"【公式】水平(到達)距離=速度√((2×高度)/重力加速度)<br>　記号式：x=v√(2h/g)<br>※速度が大きいほど、水平距離は長くなる<br>※高度が高いほど、水平距離は長くなる"},
+  {term:"波長の計算", formula:"【公式】波長=光速度(m/s)/周波数(Hz)<br>　記号式：λ=(3×10⁸)/(2.4×10⁹)=0.125m　※波長：0.125m → 12.5cm<br>　〇KHz=〇×10³Hz<br>　〇MHz=〇×10⁶Hz<br>　〇GHz=〇×10⁹Hz"},
+  {term:"フレネルゾーンの計算", formula:"【公式】フレネルゾーン半径=√((波長×半距離×半距離)/距離)<br>　記号式：r=√((λ×D1×D2)/D)<br>※波長が長い（周波数が低い）と半径は大きくなる<br>※距離が長いと半径は大きくなる<br>※D1=D2の時、半径は最大となる"},
 ];
 
 // ---------- 記号カード（表:記号 → 裏:意味） ----------
@@ -1221,7 +1233,7 @@ function renderDeck(){
       <button class="btn ghost" onclick="prevDeck()" ${D.i===0?'disabled':''}>← 前</button>
       <button class="btn primary" onclick="nextDeck()">${D.i>=D.list.length-1?'最初に戻る ↻':'次へ →'}</button>
     </div></div>`;
-  main.innerHTML=h; main.scrollTop=0;
+  main.innerHTML=h; main.scrollTop=0; fitFH(main);
 }
 function flipDeck(){ D.flipped=!D.flipped; $("#flash").classList.toggle("flipped",D.flipped); }
 function nextDeck(){
@@ -1265,16 +1277,31 @@ function renderSymbolTable(){
 // ============================================================
 //  CALC FORMULA SHEET
 // ============================================================
+function bindSup(str){ return str.replace(/(.)([²³⁸⁹]+)/g,'<span style="white-space:nowrap">$1$2</span>'); }
 function fmlHTML(str){
   return String(str).split("<br>").map(function(ln){
-    var t=ln.trim();
-    if(t.indexOf("「公式語呂」")>=0||t.indexOf("（公式語呂）")>=0||t.indexOf("（語呂覚え）")>=0){
-      var g=t.replace(/^※/,"").replace("（公式語呂）","").replace("（語呂覚え）","").trim();
-      return '<div class="fg">語呂「'+g+'」</div>';
-    }
-    if(t.charAt(0)==="※") return '<div class="fn">'+ln+'</div>';
-    return '<div class="fl">'+ln+'</div>';
+    var depth=0, t0=ln;
+    while(t0.charAt(0)==="　"){ depth++; t0=t0.slice(1); }
+    var d="d"+(depth>3?3:depth);
+    var t=t0.trim();
+    if(t.charAt(0)==="※") return '<div class="fn '+d+'">'+t0+'</div>';
+    if(t.indexOf("【公式】")===0) return '<div class="fh '+d+'">'+bindSup(t0)+'</div>';
+    var ix=t0.indexOf("例：");
+    if(ix>=0) return '<div class="fl '+d+'">'+bindSup(t0.slice(0,ix))+'<span class="fex">'+t0.slice(ix)+'</span></div>';
+    return '<div class="fl '+d+'">'+bindSup(t0)+'</div>';
   }).join("");
+}
+function fitFH(root){
+  if(!root||!root.querySelectorAll) return;
+  var els=root.querySelectorAll(".fh"); if(!els||!els.length) return;
+  for(var i=0;i<els.length;i++){
+    var el=els[i]; if(!el||!el.style) continue;
+    el.style.whiteSpace="nowrap"; el.style.fontSize="";
+    var cs=(typeof getComputedStyle==="function"?getComputedStyle(el):null);
+    var size=parseFloat(cs?cs.fontSize:"12.5")||12.5;
+    var g=80;
+    while(el.clientWidth>0 && el.scrollWidth>el.clientWidth+0.5 && size>9 && (g--)>0){ size-=0.5; el.style.fontSize=size+"px"; }
+  }
 }
 function renderCalc(){
   Tview="calc";
@@ -1285,7 +1312,7 @@ function renderCalc(){
       <div class="formula">${fmlHTML(s.formula)}</div>${s.note?`<div class="note" style="margin-top:8px;color:var(--acc2)">${s.note}</div>`:''}</div>`;
   }
   h+=`<button class="btn primary" style="margin-top:6px" onclick="startQuiz('cat',5)">計算問題を解く →</button></div>`;
-  main.innerHTML=h; main.scrollTop=0;
+  main.innerHTML=h; main.scrollTop=0; fitFH(main);
 }
 
 // ============================================================
