@@ -295,6 +295,13 @@
 .formula .d1,.dformula .d1{padding-left:1.6em}
 .formula .d2,.dformula .d2{padding-left:3.0em}
 .formula .d3,.dformula .d3{padding-left:4.4em}
+.calc-modal-ov{position:fixed;inset:0;background:rgba(4,8,16,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.calc-modal{width:100%;max-width:300px;background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 12px 44px rgba(0,0,0,.55)}
+.calc-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--ink);font-weight:700;font-size:15px}
+.calc-x{background:transparent;border:none;color:var(--sub);font-size:24px;line-height:1;cursor:pointer;padding:0 6px}
+.calc-note{margin-top:10px;color:var(--sub);font-size:10.5px;text-align:center;line-height:1.45}
+.calc-fab{position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;cursor:pointer;padding:0}
+.calc-fab:active{transform:scale(.93)}
 </style>
 </head>
 <body>
@@ -326,6 +333,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<button id="calcFab" class="calc-fab" onclick="openCalc()" aria-label="CBT電卓を開く"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="#04201c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="7.6" y="5" width="8.8" height="3.2" rx="1" fill="#04201c" stroke="none"/><circle cx="8.6" cy="12" r="1" fill="#04201c" stroke="none"/><circle cx="12" cy="12" r="1" fill="#04201c" stroke="none"/><circle cx="15.4" cy="12" r="1" fill="#04201c" stroke="none"/><circle cx="8.6" cy="16" r="1" fill="#04201c" stroke="none"/><circle cx="12" cy="16" r="1" fill="#04201c" stroke="none"/><circle cx="15.4" cy="16" r="1" fill="#04201c" stroke="none"/></svg></button>
 
 <script>
 // ============================================================
@@ -1035,38 +1044,53 @@ function renderQuiz(){
 }
 // ---------- CBT電卓（計算問題用・四則＋√） ----------
 let calcExpr='';
-function calcPadHTML(){
-  return `<div class="calcwrap">
-    <button class="calc-toggle" onclick="toggleCalc()">🖩 電卓を開く／閉じる</button>
-    <div class="calc-pad" id="calcPad" style="display:none">
-      <div class="calc-disp" id="calcDisp">0</div>
+function calcDispText(){ return (calcExpr||'0').replace(/\*/g,'\u00d7').replace(/\//g,'\u00f7'); }
+function calcKeysHTML(){
+  return `<div class="calc-disp">${calcDispText()}</div>
       <div class="calc-keys">
         <button onclick="calcClear()">C</button>
         <button onclick="calcKey('(')">(</button>
         <button onclick="calcKey(')')">)</button>
-        <button onclick="calcDel()">←</button>
+        <button onclick="calcDel()">\u2190</button>
         <button onclick="calcKey('7')">7</button>
         <button onclick="calcKey('8')">8</button>
         <button onclick="calcKey('9')">9</button>
-        <button onclick="calcKey('/')">÷</button>
+        <button onclick="calcKey('/')">\u00f7</button>
         <button onclick="calcKey('4')">4</button>
         <button onclick="calcKey('5')">5</button>
         <button onclick="calcKey('6')">6</button>
-        <button onclick="calcKey('*')">×</button>
+        <button onclick="calcKey('*')">\u00d7</button>
         <button onclick="calcKey('1')">1</button>
         <button onclick="calcKey('2')">2</button>
         <button onclick="calcKey('3')">3</button>
-        <button onclick="calcKey('-')">−</button>
+        <button onclick="calcKey('-')">\u2212</button>
         <button onclick="calcKey('0')">0</button>
         <button onclick="calcKey('.')">.</button>
-        <button onclick="calcKey('√')">√</button>
-        <button onclick="calcKey('+')">＋</button>
-        <button class="calc-eq" style="grid-column:span 4" onclick="calcEqual()">＝</button>
-      </div>
-    </div>
+        <button onclick="calcKey('\u221a')">\u221a</button>
+        <button onclick="calcKey('+')">\uff0b</button>
+        <button class="calc-eq" style="grid-column:span 4" onclick="calcEqual()">\uff1d</button>
+      </div>`;
+}
+function calcPadHTML(){
+  return `<div class="calcwrap">
+    <button class="calc-toggle" onclick="toggleCalc()">\ud83d\udda9 \u96fb\u5353\u3092\u958b\u304f\uff0f\u9589\u3058\u308b</button>
+    <div class="calc-pad" id="calcPad" style="display:none">${calcKeysHTML()}</div>
   </div>`;
 }
-function calcShow(){ const d=$("#calcDisp"); if(d) d.textContent = (calcExpr||'0').replace(/\*/g,'×').replace(/\//g,'÷'); }
+function openCalc(){
+  if($("#calcModalOv")) return;
+  var ov=document.createElement('div');
+  ov.id='calcModalOv'; ov.className='calc-modal-ov';
+  ov.innerHTML=`<div class="calc-modal" onclick="event.stopPropagation()">
+      <div class="calc-modal-head"><span>CBT\u96fb\u5353</span><button class="calc-x" onclick="closeCalc()" aria-label="\u9589\u3058\u308b">\u00d7</button></div>
+      ${calcKeysHTML()}
+      <div class="calc-note">\u672c\u756a\u306eCBT\u8a66\u9a13\u3082\u3053\u306e\u96fb\u5353\u306e\u307f\u4f7f\u7528\u53ef\uff08\u96fb\u5353\u6301\u8fbc\u4e0d\u53ef\uff09</div>
+    </div>`;
+  ov.addEventListener('click', closeCalc);
+  document.body.appendChild(ov);
+}
+function closeCalc(){ var m=$("#calcModalOv"); if(m && m.parentNode) m.parentNode.removeChild(m); }
+function calcShow(){ var t=calcDispText(); var ds=document.querySelectorAll('.calc-disp'); for(var i=0;i<ds.length;i++) ds[i].textContent=t; }
 function toggleCalc(){ const p=$("#calcPad"); if(p) p.style.display = (p.style.display==='none'?'block':'none'); }
 function calcKey(k){ if(calcExpr==='エラー') calcExpr=''; calcExpr += (k==='√'?'√(':k); calcShow(); }
 function calcClear(){ calcExpr=''; calcShow(); }
