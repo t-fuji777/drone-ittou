@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
 // 更新が即反映されるよう、HTMLはネット優先（network-first）。
-const CACHE = 'ittou-gakka-v60';
+const CACHE = 'ittou-gakka-v61';
 
 const ASSETS = [
   './',
@@ -37,8 +37,10 @@ self.addEventListener('fetch', (e) => {
   if (isHTML) {
     e.respondWith(
       fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
+        if (res && res.ok) {  // エラーページ(404/500等)でオフライン用キャッシュを汚染しない
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+        }
         return res;
       }).catch(() =>
         caches.match(req).then((c) => c || caches.match('./index.html'))
