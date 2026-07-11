@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
 // 更新が即反映されるよう、HTMLはネット優先（network-first）。
-const CACHE = 'ittou-gakka-v62';
+const CACHE = 'ittou-gakka-v63';
 
 const ASSETS = [
   './',
