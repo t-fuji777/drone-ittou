@@ -302,6 +302,17 @@
 .calc-note{margin-top:10px;color:var(--sub);font-size:10.5px;text-align:center;line-height:1.45}
 .calc-fab{position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;cursor:pointer;padding:0}
 .calc-fab:active{transform:scale(.93)}
+/* ---------- 公式カード（選択式）パズル ---------- */
+.puz-lhs{font-size:14px;font-weight:800;color:var(--acc2);margin:2px 0 10px;font-family:'Courier New',ui-monospace,monospace}
+.puz-slots{display:flex;flex-wrap:wrap;gap:6px}
+.puz-slot{min-width:38px;padding:9px 10px;border:1.5px dashed var(--line);border-radius:9px;text-align:center;font-size:13.5px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;color:var(--ink)}
+.puz-slot.filled{border-style:solid;background:var(--panel2)}
+.puz-slots.ok .puz-slot{border-color:var(--good);color:var(--good)}
+.puz-slots.ng .puz-slot{border-color:var(--bad);color:var(--bad)}
+.puz-pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.puz-pool button{padding:11px 13px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;font-size:14px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;cursor:pointer}
+.puz-pool button:disabled{opacity:.22}
+.puz-pool button:active{transform:scale(.95)}
 </style>
 </head>
 <body>
@@ -789,9 +800,8 @@ function renderHome(){
   h+=`</div>`;
 
   // 計算カード
-  h+=`<div class="sec-title">計算の暗記（カードめくり）</div><div class="modes">`;
-  h+=`<button class="mode-btn" onclick="startDeck('formula')"><span class="e">📐</span><b>公式カード</b><span>名称→公式・全${FORMULA_CARDS.length}枚</span></button>`;
-  h+=`<button class="mode-btn" onclick="startDeck('symbol')"><span class="e">🔤</span><b>記号カード</b><span>記号→意味・全${SYMBOL_CARDS.length}枚</span></button>`;
+  h+=`<div class="sec-title">計算の暗記</div><div class="modes">`;
+  h+=`<button class="mode-btn full" onclick="startPuzzle()"><span class="e" style="font-family:'Courier New',monospace;font-weight:900">√</span><b>公式カード（選択式）</b><span>数式の部品（×・÷・√を含む）を順に選んで公式を組み立てる・全${PUZZLES.length}問</span></button>`;
   h+=`</div>`;
 
   main.innerHTML=h; main.scrollTop=0; refreshHeader();
@@ -1110,69 +1120,98 @@ function reviewThese(){
 }
 
 // ============================================================
-//  公式カード / 記号カード（表:名称 → 裏:公式/意味）
+//  公式カード（選択式）: 数式の部品を順に選んで公式を組み立てるパズル（v65）
+//  tokens=正解の部品列（順序込み）／extra=誤答部品／card=正解時に全文表示する FORMULA_CARDS の index
 // ============================================================
-let D={list:[],i:0,flipped:false,kind:""};
-function startDeck(kind){
+const PUZZLES = [
+  {name:"揚力の計算", lhs:"機体重量＝揚力∝", tokens:["空気密度","×","速度²"], extra:["÷","√","速度"], card:0},
+  {name:"推力の計算", lhs:"機体重量＝推力∝", tokens:["空気密度","×","回転角速度²"], extra:["÷","√","回転角速度"], card:1},
+  {name:"消費パワーの計算", lhs:"消費パワー∝", tokens:["空気密度","×","回転角速度³","∝","推力","×","回転角速度"], extra:["÷","√","回転角速度²"], card:2},
+  {name:"旋回半径(バンク角)の計算", lhs:"旋回半径＝", tokens:["速度²","÷","(","重力加速度","×","tan〇°",")"], extra:["√","速度","sin〇°"], card:3},
+  {name:"滑空距離の計算", lhs:"滑空距離＝", tokens:["高度","×","揚抗比"], extra:["÷","√","速度"], card:4},
+  {name:"滑空角の計算", lhs:"滑空角＝", tokens:["1","÷","揚抗比"], extra:["×","√","高度"], card:5},
+  {name:"定常旋回飛行の揚力の計算", lhs:"定常旋回飛行の揚力＝", tokens:["1","÷","cosφ"], extra:["×","tanφ","sinφ"], card:6},
+  {name:"水平到達距離の計算", lhs:"水平(到達)距離＝", tokens:["速度","×","√","(","2×高度","÷","重力加速度",")"], extra:["+","高度²","tan〇°"], card:7},
+  {name:"波長の計算", lhs:"波長＝", tokens:["光速度","÷","周波数"], extra:["×","√","距離"], card:8},
+  {name:"フレネルゾーンの計算", lhs:"フレネルゾーン半径＝", tokens:["√","(","波長","×","半距離","×","半距離","÷","距離",")"], extra:["周波数","+","光速度"], card:8},
+];
+
+let P={i:0,pool:[],sel:[],state:"",firstTry:true,correct:0};
+
+function startPuzzle(){
   clearInterval(Q.tInt);
-  const src = kind==="formula" ? FORMULA_CARDS : SYMBOL_CARDS;
-  D={list:shuffle(src),i:0,flipped:false,kind};
-  renderDeck();
+  P={i:0,pool:[],sel:[],state:"",firstTry:true,correct:0};
+  puzzSetup(); renderPuzzle();
 }
-function renderDeck(){
-  Tview="deck";
-  const c=D.list[D.i];
-  const isF = D.kind==="formula";
-  const title = isF ? "公式カード" : "記号・単語カード";
-  const front = isF ? c.term : c.sym;
-  const frontSize = isF ? "22px" : "44px";
-  let backHtml;
-  if(isF){
-    backHtml = `<div class="dformula">${fmlHTML(c.formula)}</div>${c.note?`<div class="a" style="font-size:13px;text-align:center">${c.note}</div>`:''}`;
-  }else{
-    const en = (c.en && c.en!=="—") ? `<div class="dunit" style="color:var(--acc2);border:none;padding-top:0">${c.en}</div>` : '';
-    const rd = c.read ? `<div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:10px">読み: ${c.read}</div>` : '';
-    backHtml = `${rd}<div class="dmean">${c.mean}</div>${en}`;
+function puzzSetup(){
+  const p=PUZZLES[P.i];
+  P.pool=shuffle([...p.tokens, ...p.extra]);
+  P.sel=[]; P.state=""; P.firstTry=true;
+}
+function renderPuzzle(){
+  Tview="puzzle";
+  const p=PUZZLES[P.i], total=PUZZLES.length;
+  const slots=p.tokens.map((_,k)=>{
+    const t = k<P.sel.length ? P.pool[P.sel[k]] : "";
+    return `<span class="puz-slot ${t?'filled':''}">${t||'&nbsp;'}</span>`;
+  }).join("");
+  const pool=P.pool.map((t,k)=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${t}</button>`).join("");
+  let fb="";
+  if(P.state==="ok"){
+    fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
+      <div class="formula" style="margin-top:8px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[p.card].formula)}</div></div>
+      <div class="actions"><button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button></div>`;
+  } else if(P.state==="ng"){
+    fb=`<div class="explain ng" style="margin-top:14px"><div class="res">不正解</div>
+      <div style="font-size:13px;margin-top:6px;line-height:1.7">正しい式：${p.lhs}${p.tokens.join(" ")}</div></div>
+      <div class="actions">
+        <button class="btn ghost" onclick="puzzRetry()">もう一度</button>
+        <button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button>
+      </div>`;
   }
-  // 表面のタグに読みを併記（記号カードのみ）
-  const frontTag = isF ? title : (c.read ? `${title}（${c.read}）` : title);
-  let h=`<div class="screen deck-screen">
-    <div class="qhead"><div class="qcount">${D.i+1}<small> / ${D.list.length}</small></div>
+  let h=`<div class="screen">
+    <div class="qhead"><div class="qcount">${P.i+1}<small> / ${total}</small> <span style="font-size:11px;color:var(--sub);font-weight:600">公式カード（選択式）</span></div>
       <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
-    <div class="qmini-bar"><i style="width:${(D.i+1)/D.list.length*100}%"></i></div>
-    <div class="flash deck-flash ${D.flipped?'flipped':''}" id="flash" onclick="flipDeck()">
-      <div class="flash-inner">
-        <div class="flash-face flash-front" style="justify-content:center;text-align:center">
-          <div class="tag">${frontTag}</div>
-          <div style="font-size:${frontSize};font-weight:900;line-height:1.3">${front}</div>
-          <div class="hint">タップで${isF?'公式':'意味'}を表示</div>
-        </div>
-        <div class="flash-face flash-back" style="justify-content:center">
-          <div class="tag" style="color:var(--acc2);text-align:center">${front}</div>
-          ${backHtml}
-        </div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn ghost" onclick="prevDeck()" ${D.i===0?'disabled':''}>← 前</button>
-      <button class="btn primary" onclick="nextDeck()">${D.i>=D.list.length-1?'最初に戻る ↻':'次へ →'}</button>
-    </div></div>`;
+    <div class="qmini-bar"><i style="width:${P.i/total*100}%"></i></div>
+    <div class="qcard"><div class="qnum">${p.name}</div>
+      <div class="puz-lhs">${p.lhs}</div>
+      <div class="puz-slots ${P.state}">${slots}</div></div>
+    <div class="puz-pool">${pool}</div>
+    <div class="actions" style="margin-top:14px">
+      <button class="btn ghost" style="flex:.6" onclick="puzzUndo()" ${(!P.sel.length||P.state)?'disabled':''}>1つ戻す</button>
+      <button class="btn ghost" style="flex:.6" onclick="puzzRetry()" ${(!P.sel.length||P.state)?'disabled':''}>リセット</button>
+    </div>${fb}</div>`;
   main.innerHTML=h; main.scrollTop=0; fitFH(main);
 }
-function flipDeck(){ D.flipped=!D.flipped; $("#flash").classList.toggle("flipped",D.flipped); }
-function nextDeck(){
-  if(D.i+1 >= D.list.length){
-    // 一周したら再シャッフル（直前のカードが先頭に来ないように）
-    const last = D.list[D.i];
-    let next = shuffle(D.list);
-    if(next.length>1 && next[0]===last){ [next[0],next[next.length-1]]=[next[next.length-1],next[0]]; }
-    D.list = next; D.i = 0;
-  } else {
-    D.i++;
+function puzzPick(k){
+  if(P.state||P.sel.includes(k)) return;
+  const p=PUZZLES[P.i];
+  P.sel.push(k);
+  if(P.sel.length===p.tokens.length){
+    if(P.sel.map(x=>P.pool[x]).join("")===p.tokens.join("")){ if(P.firstTry) P.correct++; P.state="ok"; }
+    else { P.state="ng"; P.firstTry=false; }
   }
-  D.flipped=false; renderDeck();
+  renderPuzzle();
 }
-function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
+function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzle(); }
+function puzzRetry(){ P.sel=[]; P.state=""; renderPuzzle(); }
+function puzzNext(){
+  if(P.i>=PUZZLES.length-1){ renderPuzzleResult(); return; }
+  P.i++; puzzSetup(); renderPuzzle();
+}
+function renderPuzzleResult(){
+  Tview="puzzle";
+  const total=PUZZLES.length;
+  let h=`<div class="screen result">
+    <div class="big ${P.correct===total?'pass':'fail'}">${P.correct}<span style="font-size:20px;font-weight:800"> / ${total}</span></div>
+    <div class="verdict">公式カード（選択式） 一巡完了</div>
+    <div class="desc">初回で正しく組み立てられた公式：${P.correct} / ${total}</div>
+    <div class="actions" style="flex-direction:column">
+      <button class="btn primary" onclick="startPuzzle()">もう一巡</button>
+      <button class="btn ghost" onclick="renderHome();setNavActive('home')">ホームへ戻る</button>
+    </div></div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
 
 // ============================================================
 //  記号一覧（表形式）
@@ -1188,12 +1227,11 @@ function renderSymbolTable(){
     </tr>`;
   }).join("");
   let h=`<div class="screen"><div class="sec-title">🔤 記号一覧（計算問題で使う記号）</div>
-    <div class="explain" style="margin-bottom:14px">計算問題に出る記号と読み・意味の一覧です。1枚ずつ覚えたいときは「公式カード/記号カード」（ホーム下部）を使ってください。</div>
+    <div class="explain" style="margin-bottom:14px">計算問題に出る記号と読み・意味の一覧です。</div>
     <div class="symtable-wrap"><table class="symtable">
       <thead><tr><th>記号</th><th>読み</th><th>意味</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <button class="btn primary" style="margin-top:14px" onclick="startDeck('symbol')">記号カードでめくって覚える →</button>
     </div>`;
   main.innerHTML=h; main.scrollTop=0;
 }
