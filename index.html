@@ -693,15 +693,15 @@ const LEARN_ORDER = [1,2,5,3,4];
 BANK.forEach(q=>{ q.chapter = (CHAP[q.cat]||{}).no || 0; if(q.page==null) q.page = (CHAP[q.cat]||{}).page || 999; });
 
 // ============================================================
-//  4択化ヘルパー（4択データを正解1＋誤答3でシャッフル出題。v62で3択→4択に変更）
-//  - q.o[q.a] を必ず含め、誤答を最大3つ選び、シャッフル
-//  - 返り値: { opts:[最大4つの文章], ans:正解の表示index }
-//  - 誤答が3未満（元データが4択未満）の場合はある分だけ使う
+//  選択肢生成ヘルパー（正解1＋誤答wrongN個をシャッフル出題）
+//  - 学習系は誤答3（4択）、模試は誤答2（3択＝本番の三肢択一に合わせる。v67）
+//  - q.o[q.a] を必ず含め、誤答が足りない場合はある分だけ使う
+//  - 返り値: { opts:[文章の配列], ans:正解の表示index }
 // ============================================================
-function make4(q){
+function make4(q, wrongN){
   const correct = q.o[q.a];
   const wrongs = q.o.filter((_,i)=>i!==q.a);
-  const pickW = shuffle(wrongs).slice(0,3);
+  const pickW = shuffle(wrongs).slice(0, wrongN==null?3:wrongN);
   const opts = shuffle([correct, ...pickW]);
   return { opts, ans: opts.indexOf(correct) };
 }
@@ -815,7 +815,7 @@ function renderHome(){
 
   // 試験モード（本番想定）
   h+=`<div class="sec-title">試験モード（本番想定）</div><div class="modes">`;
-  h+=`<button class="mode-btn full" onclick="startQuiz('mock')"><span class="e">📝</span><b>模擬試験 70問</b><span>二等相当50＋一等15＋計算5・四択・75分</span></button>`;
+  h+=`<button class="mode-btn full" onclick="startQuiz('mock')"><span class="e">📝</span><b>模擬試験 70問</b><span>二等相当50＋一等15＋計算5・三肢択一（本番形式）・75分</span></button>`;
   h+=`</div>`;
 
   // 計算カード
@@ -866,7 +866,7 @@ function resumeSession(){
   if(list.length<s.ids.length*0.5){ clearSession(); toast("再開データを更新できませんでした"); renderHome(); setNavActive("home"); return; }
   const i=Math.min(s.i||0, list.length-1);
   Q={ list, i, sel:null, answered:false, correct:s.correct||0, wrongIds:(s.wrongIds||[]).slice(),
-      mode:s.mode||"cat", timer:s.timer||0, tInt:null, mock:!!s.mock, learn:!!s.learn, view4:snap4(list) };
+      mode:s.mode||"cat", timer:s.timer||0, tInt:null, mock:!!s.mock, learn:!!s.learn, view4:snap4(list, s.mock?2:3) };
   renderQuiz();
   if(Q.mock && Q.timer>0){ tickTimer(); }
 }
@@ -882,9 +882,9 @@ function resumeCardHTML(){
     </div></div>`;
 }
 
-// 出題リストに対し、各問の4択スナップショット（opts/ans）を生成して保持。
-// これにより「毎回ランダムな選択肢・配置」かつ採点が安定する。
-function snap4(list){ return list.map(q=>make4(q)); }
+// 出題リストに対し、各問の選択肢スナップショット（opts/ans）を生成して保持。
+// これにより「毎回ランダムな選択肢・配置」かつ採点が安定する。wrongN=2 で3択（模試用）。
+function snap4(list, wrongN){ return list.map(q=>make4(q, wrongN)); }
 
 function buildMock(){
   // 国家試験を想定：二等相当(common) 50問 ＋ 一等(非計算) 15問 ＋ 計算 5問 ＝ 70問
@@ -905,7 +905,7 @@ function startQuiz(mode,cat){
   else if(mode==="learn"){ list=learnList(cat); learn=true; } // cat=null:全章順次 / 数値:その章（教則の順番どおり・シャッフルしない）
   else { toast("対象の問題がありません"); return; }
   if(!list.length){ toast("対象の問題がありません"); return; }
-  Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode,timer:0,tInt:null,mock,learn,view4:snap4(list)};
+  Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode,timer:0,tInt:null,mock,learn,view4:snap4(list, mock?2:3)};
   if(Q.mock){ Q.timer=75*60; tickTimer(); }
   renderQuiz();
 }
