@@ -807,9 +807,9 @@ function renderHome(){
   let h=`<div class="screen">`;
   if(hasResume()) h+=resumeCardHTML();
 
-  // 学習モード（教則を順番に暗記・即時フィードバック・四択CBT）
-  h+=`<div class="sec-title">学習モード（教則を順番に暗記）</div><div class="modes">`;
-  h+=`<button class="mode-btn full" onclick="startQuiz('learn')"><span class="e">📚</span><b>順番に学習（全${BANK.length}問）</b><span>教則の前から順に・1問ずつ正誤と解説・四択</span></button>`;
+  // 学習モード（ランダムに暗記・即時フィードバック・四択CBT）
+  h+=`<div class="sec-title">学習モード（ランダムに暗記）</div><div class="modes">`;
+  h+=`<button class="mode-btn full" onclick="startQuiz('learn')"><span class="e">📚</span><b>ランダムに学習（全${BANK.length}問）</b><span>全問からランダムに出題・1問ずつ正誤と解説・四択</span></button>`;
   h+=`<button class="mode-btn full" onclick="learnChapterMenu()"><span class="e">🗂️</span><b>章を選んで学習</b><span>章ごとに順番に暗記</span></button>`;
   h+=`</div>`;
 
@@ -831,7 +831,7 @@ function learnChapterMenu(){
   let h=`<div class="screen">
     <div class="qhead"><div class="qcount">🗂️ 章を選んで学習</div>
     <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome()">← 戻る</button></div>
-    <div class="explain" style="margin-bottom:14px">選んだ章を、教則の順番どおりに1問ずつ学習します（四択・即時フィードバック）。</div>
+    <div class="explain" style="margin-bottom:14px">選んだ章から、ランダムな順で1問ずつ学習します（四択・即時フィードバック）。</div>
     <div class="modes">`;
   for(const c of LEARN_ORDER){
     const C=CATS[c], list=byCat(c), kn=knownCount(list), pct=list.length?Math.round(kn/list.length*100):0;
@@ -902,7 +902,7 @@ function startQuiz(mode,cat){
   if(mode==="mock"){ list=buildMock(); mock=true; }
   else if(mode==="cat"){ list=shuffle(byCat(cat)); }
   else if(mode==="review"){ list=shuffle(BANK.filter(q=>S.wrong[q.id])); }
-  else if(mode==="learn"){ list=learnList(cat); learn=true; } // cat=null:全章順次 / 数値:その章（教則の順番どおり・シャッフルしない）
+  else if(mode==="learn"){ list=shuffle(learnList(cat)); learn=true; } // cat=null:全章 / 数値:その章。v68でランダム出題に変更
   else { toast("対象の問題がありません"); return; }
   if(!list.length){ toast("対象の問題がありません"); return; }
   Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode,timer:0,tInt:null,mock,learn,view4:snap4(list, mock?2:3)};
