@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
 // 更新が即反映されるよう、HTMLはネット優先（network-first）。
-const CACHE = 'ittou-gakka-v68';
+const CACHE = 'ittou-gakka-v69';
 
 const ASSETS = [
   './',
@@ -48,10 +48,13 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+  // Google Fonts（CSS/woff2）はクロスオリジンだがオフラインでの体裁維持のためキャッシュ対象にする
+  const isFont = /fonts\.(googleapis|gstatic)\.com/.test(req.url);
   e.respondWith(
     caches.match(req).then((cached) => {
       const fetched = fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
+        if (res && ((res.status === 200 && res.type === 'basic') ||
+                    (isFont && (res.status === 200 || res.type === 'opaque')))) {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));
         }
