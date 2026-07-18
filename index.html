@@ -313,6 +313,14 @@
 .puz-pool button{padding:11px 13px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;font-size:14px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;cursor:pointer}
 .puz-pool button:disabled{opacity:.22}
 .puz-pool button:active{transform:scale(.95)}
+/* ---------- 模試CBT（解答状況グリッド・ペース警告） ---------- */
+.qtimer.warn{color:var(--bad)}
+.mock-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;max-height:300px;overflow-y:auto;margin-top:4px}
+.mock-cell{padding:8px 0;text-align:center;font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--sub);cursor:pointer}
+.mock-cell.done{background:var(--acc);border-color:var(--acc);color:#06121e}
+.mock-cell.flag{border-color:var(--bad);color:var(--bad)}
+.mock-cell.done.flag{color:#06121e;box-shadow:inset 0 0 0 1.5px var(--bad)}
+.mock-cell.cur{outline:2px solid var(--acc2)}
 </style>
 </head>
 <body>
@@ -326,7 +334,7 @@
           <div class="sub">教則第4版準拠 / 一等無人航空機操縦士</div>
         </div>
       </div>
-      <div class="streak" id="streak">🔥 <span id="streakN">0</span></div>
+      <div class="streak" id="streak">🔥 <span id="streakN">0</span><span style="margin-left:7px;color:var(--sub);font-weight:600;font-size:11px">今日 <span id="todayN">0</span>問</span></div>
     </div>
     <div class="progbar"><i id="globalProg"></i></div>
     <div class="prog-label"><span id="progTxt">習得 0問</span><span id="progPct">0%</span></div>
@@ -759,7 +767,9 @@ const SYMBOL_CARDS = [
 
 // ---------- Persistent state ----------
 const KEY="ittou_state_v1";
-let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{} };
+let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{} };
+
+const dayN = () => Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5);   // ローカル日付基準の日単位整数（Leitner の due 管理用。UTC境界だと日本では朝9時に日付が変わってしまう）
 
 async function load(){
   try{
@@ -767,19 +777,59 @@ async function load(){
     if(raw) S = Object.assign(S, JSON.parse(raw));
   }catch(e){ /* first run */ }
   migrateBank();
+  // v70: 旧形式（即時採点方式）の模試セッションは ansSel を持たず一括採点で全問未解答扱いになるため破棄
+  if(S.session && S.session.mock && !S.session.ansSel){ delete S.session; save(); }
+  // v70: 間隔反復（Leitner）の初期化を既存進捗から一度だけ行う
+  if(!S.srInit){
+    for(const id in S.wrong){ S.box[id]=0; S.due[id]=dayN(); }
+    for(const id in S.known){ if(S.box[id]==null){ S.box[id]=3; S.due[id]=dayN()+3; } }
+    S.srInit=true; save();
+  }
+  // 60日より古い日別カウンタを剪定
+  const cutoff = Date.now()-60*864e5;
+  for(const k in S.daily){ if(new Date(k).getTime()<cutoff) delete S.daily[k]; }
   dayTick();
 }
-// 日付跨ぎ処理：起動時に加え解答時にも呼ぶ（開きっぱなしで日付を跨いだ際の streak 加算漏れ・後日の不当リセット防止）
-function dayTick(){
+// 日付処理（v70で実学習ベースに変更）:
+//  - streak は「1問以上解答した日」の連続日数。起動しただけでは伸びない
+//  - 連続が切れた状態で起動したら表示を 0 に（最初の解答で 1 から再開）
+function dayTick(fromAnswer){
   const today = new Date().toDateString();
-  if(S.lastDay !== today){
-    const y = new Date(Date.now()-864e5).toDateString();
-    if(S.lastDay === y) S.streak += 1; else S.streak = 1;
+  const y = new Date(Date.now()-864e5).toDateString();
+  if(S.lastDay && S.lastDay!==today && S.lastDay!==y && S.streak!==0){ S.streak=0; save(); }
+  if(fromAnswer && S.lastDay!==today){
+    S.streak = (S.lastDay===y ? S.streak+1 : 1);
     S.lastDay = today;
     save();
-    const el=document.querySelector("#streakN"); if(el) el.textContent=S.streak;
+  }
+  const el=document.querySelector("#streakN"); if(el) el.textContent=S.streak||0;
+  const tn=document.querySelector("#todayN"); if(tn) tn.textContent=(S.daily[today]||{n:0}).n;
+}
+// 採点時の進捗更新（学習系の即時採点と模試の一括採点で共通・v70）:
+//  - 習得(known)は連続2回正解で付与、誤答で剥奪（三択のまぐれ正解1回では習得にしない）
+//  - 復習リスト(wrong)からの除外も連続2回正解が条件
+//  - Leitner: 正解で box+1・次回出題日を 1→3→7→14→30日先に延長、誤答で box0・当日再出題対象
+const SR_IV = {1:1, 2:3, 3:7, 4:14, 5:30};
+function gradeOne(q, correct){
+  S.seen[q.id]=true;
+  S.attempts[q.id]=(S.attempts[q.id]||0)+1;
+  const dk=new Date().toDateString();
+  const d=S.daily[dk]||(S.daily[dk]={n:0,ok:0}); d.n++; if(correct) d.ok++;
+  if(correct){
+    S.cs[q.id]=(S.cs[q.id]||0)+1;
+    if(S.cs[q.id]>=2){ S.known[q.id]=true; delete S.wrong[q.id]; }
+    // box1〜5 は次回出題日を設定、box5（30日後）の復習にも正解したら box6=卒業（due 削除）
+    const b=Math.min((S.box[q.id]||0)+1,6);
+    S.box[q.id]=b;
+    if(b<=5) S.due[q.id]=dayN()+SR_IV[b]; else delete S.due[q.id];
+  } else {
+    S.cs[q.id]=0;
+    delete S.known[q.id];
+    S.wrong[q.id]=true;
+    S.box[q.id]=0; S.due[q.id]=dayN();
   }
 }
+function dueList(){ const t=dayN(); return BANK.filter(q=>S.due[q.id]!=null && S.due[q.id]<=t && (S.box[q.id]||0)<=5); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 // ---------- helpers ----------
@@ -798,6 +848,7 @@ function refreshHeader(){
   $("#progTxt").textContent=`習得 ${kn} / ${tot}問`;
   $("#progPct").textContent=pct+"%";
   $("#streakN").textContent=S.streak||0;
+  const tn=$("#todayN"); if(tn) tn.textContent=(S.daily[new Date().toDateString()]||{n:0}).n;
 }
 
 // ============================================================
@@ -808,8 +859,16 @@ function renderHome(){
   let h=`<div class="screen">`;
   if(hasResume()) h+=resumeCardHTML();
 
-  // 学習モード（ランダムに暗記・即時フィードバック・四択CBT）
+  // 今日の復習（Leitner 間隔反復・v70）
+  const dueN=dueList().length;
+  if(dueN) h+=`<div class="ref-card" style="border:1px solid var(--acc2);margin-bottom:14px">
+    <h3 style="color:var(--ink);font-size:13px">今日の復習 ${dueN}問</h3>
+    <div class="note" style="margin-top:4px">正解するたびに再出題の間隔が 1→3→7→14→30日 と延びます</div>
+    <button class="btn primary" style="width:100%;margin-top:10px" onclick="startQuiz('due')">今日の復習を始める</button></div>`;
+
+  // 学習モード（ランダムに暗記・即時フィードバック・三択CBT）
   h+=`<div class="sec-title">学習モード（ランダムに暗記）</div><div class="modes">`;
+  h+=`<button class="mode-btn full" onclick="startQuiz('quick')"><span class="e" style="font-weight:900;font-size:15px">10</span><b>クイック10問</b><span>弱点優先で10問だけ・スキマ時間に</span></button>`;
   h+=`<button class="mode-btn full" onclick="startQuiz('learn')"><span class="e">📚</span><b>ランダムに学習（全${BANK.length}問）</b><span>全問からランダムに出題・1問ずつ正誤と解説・三択</span></button>`;
   h+=`<button class="mode-btn full" onclick="learnChapterMenu()"><span class="e">🗂️</span><b>章を選んで学習</b><span>章ごとにランダムに暗記</span></button>`;
   h+=`</div>`;
@@ -855,7 +914,8 @@ function saveSession(){
   if(!Q.list||!Q.list.length) return;
   if(Q.mode==="result") return;
   S.session={ ids:Q.list.map(q=>q.id), i:Q.i, correct:Q.correct, wrongIds:Q.wrongIds.slice(),
-    mode:Q.mode, mock:Q.mock, learn:Q.learn, timer:Q.timer, n:BANK.length, ts:Date.now() };
+    mode:Q.mode, mock:Q.mock, learn:Q.learn, timer:Q.timer, n:BANK.length, ts:Date.now(),
+    ansSel:Q.ansSel?Q.ansSel.slice():undefined, flags:Q.flags, times:Q.times?Q.times.slice():undefined };
   save();
 }
 function clearSession(){ if(S.session){ delete S.session; save(); } }
@@ -869,15 +929,28 @@ function resumeSession(){
   const i=Math.min(s.i||0, list.length-1);
   Q={ list, i, sel:null, answered:false, correct:s.correct||0, wrongIds:(s.wrongIds||[]).slice(),
       mode:s.mode||"cat", timer:s.timer||0, tInt:null, mock:!!s.mock, learn:!!s.learn, view4:snap4(list) };
+  if(Q.mock){
+    Q.ansSel=(s.ansSel&&s.ansSel.length===list.length)?s.ansSel.slice():Array(list.length).fill(null);
+    Q.flags=s.flags||{};
+    Q.times=(s.times&&s.times.length===list.length)?s.times.slice():Array(list.length).fill(0);
+    // 再snapで選択済みテキストが表示選択肢から漏れた場合、誤答枠を1つ差し替えて表示整合を保つ
+    Q.ansSel.forEach((sel,i)=>{
+      if(sel==null) return;
+      const v=Q.view4[i];
+      if(v.opts.indexOf(sel)>=0) return;
+      v.opts[(v.ans+1)%v.opts.length]=sel;
+    });
+  }
   renderQuiz();
   if(Q.mock && Q.timer>0){ tickTimer(); }
 }
 function resumeCardHTML(){
   const s=S.session, total=s.ids.length, pos=Math.min((s.i||0)+1,total);
-  const ml={learn:"学習モード",cat:"分野別演習",review:"復習",mock:"模擬試験"}[s.mode]||"演習";
+  const ml={learn:"学習モード",cat:"分野別演習",review:"復習",mock:"模擬試験",quick:"クイック10問",due:"今日の復習"}[s.mode]||"演習";
+  const prog=s.mock ? `解答済 ${(s.ansSel||[]).filter(x=>x!=null).length} / ${total}問` : `${pos} / ${total}問まで進行（正解 ${s.correct||0}）`;
   return `<div class="ref-card" style="border:1px solid var(--acc);margin-bottom:14px">
     <h3 style="color:var(--ink);font-size:13px">中断した${ml}があります</h3>
-    <div class="note" style="margin-top:4px">${pos} / ${total}問まで進行（正解 ${s.correct||0}）</div>
+    <div class="note" style="margin-top:4px">${prog}</div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn primary" style="flex:1" onclick="resumeSession()">続きから再開</button>
       <button class="btn ghost" style="flex:none;padding:9px 16px" onclick="discardSession()">破棄</button>
@@ -889,13 +962,20 @@ function resumeCardHTML(){
 function snap4(list, wrongN){ return list.map(q=>make4(q, wrongN)); }
 
 function buildMock(){
-  // 国家試験を想定：二等相当(common) 50問 ＋ 一等(非計算) 15問 ＋ 計算 5問 ＝ 70問
-  // 本番の計算問題は5問程度のため、計算(cat5)を5問に固定し比率を本番に近づける（v62）。
-  const common = shuffle(BANK.filter(q=>q.lvl==="common"));
-  const oneNC  = shuffle(BANK.filter(q=>q.lvl==="one" && q.cat!==5));
-  const calc   = shuffle(BANK.filter(q=>q.cat===5));
-  const pick=(arr,n)=>arr.slice(0,Math.min(n,arr.length));
-  return shuffle([...pick(common,50), ...pick(oneNC,15), ...pick(calc,5)]);
+  // 国家試験を想定：common50＋一等(非計算)15＋計算5＝70問（v62で比率化、v70で層化固定）
+  // 分野構成を毎回固定（common50=規則24/システム12/操縦者6/リスク8、一等15=リスク11/システム3/その他1）し、
+  // 回次間のスコア比較を可能にする。抽出は挑戦回数の少ない問題を優先し、連続受験で全問を一巡させる。
+  const pickN=(pool,n)=>shuffle(pool).sort((a,b)=>(S.attempts[a.id]||0)-(S.attempts[b.id]||0)).slice(0,Math.min(n,pool.length));
+  const fill=(sel,pool,n)=>{ if(sel.length<n){ const used=new Set(sel.map(q=>q.id)); sel=sel.concat(pickN(pool.filter(q=>!used.has(q.id)),n-sel.length)); } return sel; };
+  let common=[];
+  for(const [c,n] of [[1,24],[2,12],[3,6],[4,8]]) common=common.concat(pickN(BANK.filter(q=>q.lvl==="common"&&q.cat===c),n));
+  common=fill(common,BANK.filter(q=>q.lvl==="common"),50);
+  const oneNC=BANK.filter(q=>q.lvl==="one"&&q.cat!==5);
+  let one=[];
+  for(const [c,n] of [[4,11],[2,3],[3,1]]) one=one.concat(pickN(oneNC.filter(q=>q.cat===c),n));
+  one=fill(one,oneNC,15);
+  const calc=pickN(BANK.filter(q=>q.cat===5),5);
+  return shuffle([...common,...one,...calc]);
 }
 
 function startQuiz(mode,cat){
@@ -905,10 +985,25 @@ function startQuiz(mode,cat){
   else if(mode==="cat"){ list=shuffle(byCat(cat)); }
   else if(mode==="review"){ list=shuffle(BANK.filter(q=>S.wrong[q.id])); }
   else if(mode==="learn"){ list=shuffle(learnList(cat)); learn=true; } // cat=null:全章 / 数値:その章。v68でランダム出題に変更
+  else if(mode==="quick"){
+    // クイック10問（v70）: 要復習 > 未定着(seen&&!known) > 未見 > 習得済み の優先度、同グループ内は挑戦回数昇順
+    const pri=q=> S.wrong[q.id]?0 : (S.seen[q.id]&&!S.known[q.id])?1 : !S.seen[q.id]?2 : 3;
+    list=shuffle(BANK).sort((a,b)=>pri(a)-pri(b)||(S.attempts[a.id]||0)-(S.attempts[b.id]||0)).slice(0,10);
+    learn=true;
+  }
+  else if(mode==="due"){
+    // 今日の復習（Leitner・v70）: 期限到来分を弱い順（box昇順）に
+    list=shuffle(dueList()).sort((a,b)=>(S.box[a.id]||0)-(S.box[b.id]||0));
+    learn=true;
+  }
   else { toast("対象の問題がありません"); return; }
   if(!list.length){ toast("対象の問題がありません"); return; }
   Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode,timer:0,tInt:null,mock,learn,view4:snap4(list)};
-  if(Q.mock){ Q.timer=75*60; tickTimer(); }
+  if(Q.mock){
+    Q.ansSel=Array(list.length).fill(null);   // 選択肢テキストで保持（再開時の再シャッフルに耐える）
+    Q.flags={}; Q.times=Array(list.length).fill(0);
+    Q.timer=75*60; tickTimer();
+  }
   renderQuiz();
 }
 
@@ -927,12 +1022,21 @@ function tickTimer(){
   clearInterval(Q.tInt);
   Q.tInt=setInterval(()=>{
     Q.timer--; const el=$("#qtimer");
-    if(el) el.textContent=fmtTimer(Q.timer);
+    if(el){
+      el.textContent=fmtTimer(Q.timer);
+      // ペース警告（v70）: 想定消化数（経過時間×70問/75分）に2問以上遅れたら警告色
+      if(Q.mock && Q.ansSel){
+        const expect=Math.floor((75*60-Q.timer)/(75*60)*Q.list.length);
+        const done=Q.ansSel.filter(x=>x!=null).length;
+        el.classList.toggle('warn', done<=expect-2);
+      }
+    }
     if(Q.timer<=0){ clearInterval(Q.tInt); finishQuiz(); }
   },1000);
 }
 
 function renderQuiz(){
+  if(Q.mock){ renderMockQ(); return; }   // v70: 模試は本番CBT形式（正誤非開示・自由往復）の専用画面
   Tview="quiz";
   const q=Q.list[Q.i];
   const v=Q.view4[Q.i];               // {opts:[4], ans:0-3}
@@ -970,6 +1074,97 @@ function renderQuiz(){
   calcShow();   // 開いたままの電卓モーダル等の .calc-disp を現在の式に同期
   saveSession();
 }
+
+// ============================================================
+//  模試（本番CBT形式・v70）: 正誤は終了まで非開示・全問自由往復・
+//  「後で見直す」フラグ・解答状況一覧・終了時に一括採点
+// ============================================================
+function renderMockQ(){
+  Tview="quiz";
+  const q=Q.list[Q.i], v=Q.view4[Q.i], total=Q.list.length;
+  if(q.cat===5) calcExpr='';
+  const selText=Q.ansSel[Q.i];
+  const tag = q.cat===5 ? `<span class="qtag one">計算〔一等〕</span>`
+            : q.lvl==="one" ? `<span class="qtag one">一等</span>`
+            : `<span class="qtag">${CATS[q.cat].short}</span>`;
+  const answered=Q.ansSel.filter(x=>x!=null).length;
+  const flagged=!!Q.flags[Q.i];
+  let h=`<div class="screen">
+    <div class="qhead">
+      <div class="qcount">${Q.i+1}<small> / ${total}</small> <span style="font-size:11px;color:var(--sub);font-weight:600">解答済 ${answered}</span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="qtimer" id="qtimer">${fmtTimer(Q.timer)}</span>${tag}</div>
+    </div>
+    <div class="qmini-bar"><i style="width:${answered/total*100}%"></i></div>
+    <div class="qcard">
+      <div class="qnum">Q${Q.i+1}${q.calc?'・'+q.calc:''}${flagged?'　<span style="color:var(--bad)">［見直し］</span>':''}</div>
+      <div class="qtext">${fmtQ(q)}</div>
+    </div>
+    <div class="opts" id="opts">`;
+  v.opts.forEach((opt,idx)=>{
+    h+=`<button class="opt ${selText===opt?'sel':''}" data-i="${idx}" onclick="mockChoose(${idx})"><span class="k">${"ABC"[idx]}</span><span>${opt}</span></button>`;
+  });
+  h+=`</div>
+    <div class="actions" id="qact" style="gap:8px">
+      <button class="btn ghost" style="flex:.7" onclick="mockNav(-1)" ${Q.i===0?'disabled':''}>← 前へ</button>
+      <button class="btn ghost" style="flex:.9;${flagged?'color:var(--bad);border-color:var(--bad)':''}" onclick="mockFlag()">${flagged?'見直し解除':'後で見直す'}</button>
+      <button class="btn primary" style="flex:.7" onclick="mockNav(1)" ${Q.i>=total-1?'disabled':''}>次へ →</button>
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button class="btn ghost" style="flex:.6" onclick="quitQuiz()">中断</button>
+      <button class="btn primary" onclick="mockStatus()">解答状況・終了</button>
+    </div>${q.cat===5?calcPadHTML():''}</div>`;
+  main.innerHTML=h; main.scrollTop=0;
+  calcShow();
+  saveSession();
+  Q._qs=Date.now();   // 滞在時間の計測開始（分野別所要時間用）
+}
+function mockLeave(){
+  if(Q._qs!=null && Q.times){ Q.times[Q.i]=(Q.times[Q.i]||0)+Math.max(0,Math.round((Date.now()-Q._qs)/1000)); }
+  Q._qs=null;
+}
+function mockChoose(idx){
+  const v=Q.view4[Q.i];
+  Q.ansSel[Q.i]=v.opts[idx];   // 選択肢テキストで保持（再開時の再シャッフルに耐える）
+  document.querySelectorAll(".opt").forEach(o=>o.classList.toggle("sel",+o.dataset.i===idx));
+  const c=document.querySelector('.qcount span'); if(c) c.textContent='解答済 '+Q.ansSel.filter(x=>x!=null).length;
+  saveSession();
+}
+function mockNav(d){
+  mockLeave();
+  Q.i=Math.min(Math.max(Q.i+d,0),Q.list.length-1);
+  renderMockQ();
+}
+function mockFlag(){ mockLeave(); Q.flags[Q.i]=!Q.flags[Q.i]; if(!Q.flags[Q.i]) delete Q.flags[Q.i]; renderMockQ(); }
+function mockStatus(){
+  if($("#mockStOv")) return;
+  mockLeave();
+  const total=Q.list.length, un=Q.ansSel.filter(x=>x==null).length;
+  let cells='';
+  for(let k=0;k<total;k++){
+    cells+=`<button class="mock-cell ${Q.ansSel[k]!=null?'done':''} ${Q.flags[k]?'flag':''} ${k===Q.i?'cur':''}" onclick="mockJump(${k})">${k+1}</button>`;
+  }
+  var ov=document.createElement('div');
+  ov.id='mockStOv'; ov.className='calc-modal-ov';
+  ov.innerHTML=`<div class="calc-modal" style="max-width:360px" onclick="event.stopPropagation()">
+    <div class="calc-modal-head"><span>解答状況（未解答 ${un}問）</span><button class="calc-x" onclick="mockStClose()" aria-label="閉じる">×</button></div>
+    <div class="mock-grid">${cells}</div>
+    <div style="display:flex;gap:10px;margin:10px 0 2px;font-size:10px;color:var(--sub);align-items:center">
+      <span class="mock-cell done" style="pointer-events:none;padding:3px 7px">1</span>解答済
+      <span class="mock-cell flag" style="pointer-events:none;padding:3px 7px">2</span>見直し
+      <span class="mock-cell" style="pointer-events:none;padding:3px 7px">3</span>未解答</div>
+    <button class="btn bad" style="width:100%;margin-top:10px" onclick="mockFinishAsk()">試験を終了して採点する</button>
+  </div>`;
+  ov.addEventListener('click', mockStClose);
+  document.body.appendChild(ov);
+}
+function mockStClose(){ var m=$("#mockStOv"); if(m && m.parentNode) m.parentNode.removeChild(m); if(Tview==='quiz'&&Q.mock&&Q._qs==null) Q._qs=Date.now(); }
+function mockJump(k){ mockStClose(); mockLeave(); Q.i=k; renderMockQ(); }
+function mockFinishAsk(){
+  const un=Q.ansSel.filter(x=>x==null).length;
+  const msg=un?`未解答が ${un}問あります。終了して採点しますか？（未解答は不正解として採点）`:"終了して採点しますか？";
+  if(confirm(msg)){ mockStClose(); finishQuiz(); }
+}
+
 // ---------- CBT電卓（計算問題用・四則＋√） ----------
 let calcExpr='';
 function calcDispText(){ return (calcExpr||'0').replace(/\*/g,'\u00d7').replace(/\//g,'\u00f7'); }
@@ -1051,26 +1246,28 @@ function nextQ(){
   const q=Q.list[Q.i];
   const v=Q.view4[Q.i];
   if(!Q.answered){
-    // grade（4択：表示上の正解index v.ans と選択 Q.sel を比較）
+    // grade（表示上の正解index v.ans と選択 Q.sel を比較）。進捗更新は gradeOne に集約（v70）
     Q.answered=true;
-    dayTick();
     const correct = Q.sel===v.ans;
-    S.seen[q.id]=true;
-    if(correct){ Q.correct++; if(!Q.mock){ S.known[q.id]=true; } delete S.wrong[q.id]; }
-    else { Q.wrongIds.push(q.id); S.wrong[q.id]=true; }
-    S.attempts[q.id]=(S.attempts[q.id]||0)+1;
+    if(correct) Q.correct++; else Q.wrongIds.push(q.id);
+    gradeOne(q, correct);
+    dayTick(true);
     save();
     document.querySelectorAll(".opt").forEach(o=>{
       const i=+o.dataset.i; o.classList.add("disabled");
       if(i===v.ans) o.classList.add("correct");
       else if(i===Q.sel) o.classList.add("wrong");
     });
-    if(!Q.mock){
-      $("#exp").innerHTML=`<div class="explain ${correct?'ok':'ng'}">
-        <div class="res">${correct?'✓ 正解':'✗ 不正解'} — 正答は ${"ABCD"[v.ans]}</div>
-        <div class="body">${q.e.replace(/\n/g,"<br>")}</div>
-        <div class="ref">📖 ${q.ref}</div></div>`;
+    // 計算問題は解説の下に該当する公式カード全文を添付（v70）
+    let fmlBlock='';
+    if(q.cat===5 && q.calc){
+      const ci=FORMULA_CARDS.findIndex(c=>c.term.indexOf(q.calc)>=0);
+      if(ci>=0) fmlBlock=`<div class="formula" style="margin-top:10px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[ci].formula)}</div>`;
     }
+    $("#exp").innerHTML=`<div class="explain ${correct?'ok':'ng'}">
+      <div class="res">${correct?'✓ 正解':'✗ 不正解'} — 正答は ${"ABCD"[v.ans]}</div>
+      <div class="body">${q.e.replace(/\n/g,"<br>")}</div>
+      <div class="ref">📖 ${q.ref}</div>${fmlBlock}</div>`;
     const last = Q.i>=Q.list.length-1;
     $("#nextBtn").textContent = last ? "結果を見る" : "次の問題 →";
     $("#nextBtn").disabled=false;
@@ -1083,16 +1280,20 @@ function nextQ(){
 function quitQuiz(){
   // clearInterval は確定後に行う（confirm キャンセル時に模試タイマーが止まったままになるのを防ぐ）
   if(Q.learn){ clearInterval(Q.tInt); renderHome(); setNavActive("home"); return; }
-  if(confirm("演習を中断してホームに戻りますか？")){ clearInterval(Q.tInt); renderHome(); setNavActive("home"); }
+  if(confirm("演習を中断してホームに戻りますか？")){
+    if(Q.mock){ mockLeave(); saveSession(); }   // 滞在時間と最新の残時間を保存（再開時の巻き戻り防止）
+    clearInterval(Q.tInt); renderHome(); setNavActive("home");
+  }
 }
 
 function finishQuiz(){
   Tview="result"; clearInterval(Q.tInt); clearSession();
+  if(Q.mock){ finishMock(); return; }   // v70: 模試は一括採点（本番CBT形式）
   const total=Q.list.length, correct=Q.correct, wrong=total-correct;
   const pct=Math.round(correct/total*100);
-  // 学習モードは合否でなく「一巡完了」として表示
-  if(Q.mode==="learn"){
-    S.history.push({t:Date.now(),mode:"learn",total,correct,pct,mock:false});
+  // 学習系（learn/quick/due）は合否でなく「一巡完了」として表示
+  if(Q.learn){
+    S.history.push({t:Date.now(),mode:Q.mode,total,correct,pct,mock:false});
     if(S.history.length>50) S.history=S.history.slice(-50);
     save();
     let h=`<div class="screen result">
@@ -1110,28 +1311,11 @@ function finishQuiz(){
       </div></div>`;
     main.innerHTML=h; main.scrollTop=0; refreshHeader(); return;
   }
-  const pass = Q.mock ? pct>=90 : pct>=80;
-  S.history.push({t:Date.now(),mode:Q.mode,total,correct,pct,mock:Q.mock});
+  const pass = pct>=80;
+  S.history.push({t:Date.now(),mode:Q.mode,total,correct,pct,mock:false});
   if(S.history.length>50) S.history=S.history.slice(-50);
   save();
-  let note;
-  if(Q.mock) note = pass?"合格基準（90%）クリア！この調子で本番に臨みましょう。":"本番は二等相当・一等とも各科目で高い正答率が必要。間違えた問題を復習で潰しましょう。";
-  else note = pass?"よくできています。":"復習タブで弱点を重点的に固めましょう。";
-  // 模試のみ: 分野別の正答率内訳（弱点の可視化・v69）。時間切れ終了時は解答済みの問題のみ集計
-  let catBlock="";
-  if(Q.mock){
-    const answeredN=Math.min(Q.list.length, Q.i+(Q.answered?1:0));
-    const done=Q.list.slice(0,answeredN);
-    let rows="";
-    for(const c of [1,2,5,3,4]){
-      const sub=done.filter(q=>q.cat===c); if(!sub.length) continue;
-      const wr=sub.filter(q=>Q.wrongIds.includes(q.id)).length, ok=sub.length-wr, p=Math.round(ok/sub.length*100);
-      const col=p>=90?'var(--good)':'var(--bad)';
-      rows+=`<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span>${CATS[c].short}</span><span style="color:${col}">${ok}/${sub.length}・${p}%</span></div>
-        <div style="height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-bottom:9px"><i style="display:block;height:100%;width:${p}%;background:${col};border-radius:3px"></i></div>`;
-    }
-    if(rows) catBlock=`<div class="ref-card" style="text-align:left;margin-top:4px"><h3 style="color:var(--ink);font-size:13px">分野別 正答率</h3><div style="margin-top:8px">${rows}</div></div>`;
-  }
+  const note = pass?"よくできています。":"復習タブで弱点を重点的に固めましょう。";
   let h=`<div class="screen result">
     <div class="big ${pass?'pass':'fail'}">${pct}%</div>
     <div class="verdict">${pass?'🎉 合格ライン':'もう一歩'}</div>
@@ -1141,12 +1325,116 @@ function finishQuiz(){
       <div class="box ng"><div class="n">${wrong}</div><div class="l">不正解</div></div>
       <div class="box"><div class="n">${total}</div><div class="l">問題数</div></div>
     </div>
-    ${catBlock}
     <div class="actions" style="flex-direction:column">
       ${Q.wrongIds.length?`<button class="btn bad" onclick="reviewThese()">✗ 間違えた${Q.wrongIds.length}問を復習</button>`:''}
       <button class="btn primary" onclick="renderHome();setNavActive('home')">ホームへ戻る</button>
     </div></div>`;
   main.innerHTML=h; main.scrollTop=0; refreshHeader();
+}
+
+// ---------- 模試の一括採点と結果（v70） ----------
+let MRV=null;   // 見直し画面用スナップショット（メモリのみ）
+function finishMock(){
+  mockLeave();
+  mockStClose();
+  const total=Q.list.length;
+  Q.correct=0; Q.wrongIds=[];
+  let answeredN=0;
+  Q.list.forEach((q,i)=>{
+    const sel=Q.ansSel[i];
+    const ok = sel!=null && sel===q.o[q.a];
+    if(ok) Q.correct++; else Q.wrongIds.push(q.id);
+    if(sel!=null){ answeredN++; gradeOne(q, ok); }   // 未解答は採点上のみ不正解（進捗データには触れない）
+  });
+  if(answeredN>0) dayTick(true);
+  const correct=Q.correct, wrong=total-correct, pct=Math.round(correct/total*100);
+  const pass=pct>=90;
+  const timeUsed=Math.min(75*60, 75*60-Math.max(0,Q.timer));
+  // 分野別集計（正答率と所要時間）
+  const byCat={};
+  for(const c of [1,2,5,3,4]){
+    const sub=Q.list.map((q,i)=>({q,i})).filter(x=>x.q.cat===c);
+    if(!sub.length) continue;
+    const wr=sub.filter(x=>Q.wrongIds.includes(x.q.id)).length;
+    byCat[c]={ok:sub.length-wr, n:sub.length, sec:sub.reduce((s,x)=>s+(Q.times[x.i]||0),0)};
+  }
+  S.history.push({t:Date.now(),mode:'mock',total,correct,pct,mock:true,timeUsed,byCat,wrongIds:Q.wrongIds.slice()});
+  if(S.history.length>50) S.history=S.history.slice(-50);
+  save();
+  // 表示
+  const un=total-answeredN;
+  const note = pass?"合格基準（90%）クリア！この調子で本番に臨みましょう。":"本番は各分野で高い正答率が必要。見直しで誤答の中身を確認しましょう。";
+  let rows="";
+  for(const c of [1,2,5,3,4]){
+    const b=byCat[c]; if(!b) continue;
+    const p=Math.round(b.ok/b.n*100), col=p>=90?'var(--good)':'var(--bad)';
+    rows+=`<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span>${CATS[c].short}</span><span style="color:${col}">${b.ok}/${b.n}・${p}%　<span style="color:var(--sub)">平均${Math.round(b.sec/b.n)}秒/問</span></span></div>
+      <div style="height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-bottom:9px"><i style="display:block;height:100%;width:${p}%;background:${col};border-radius:3px"></i></div>`;
+  }
+  let h=`<div class="screen result">
+    <div class="big ${pass?'pass':'fail'}">${pct}%</div>
+    <div class="verdict">${pass?'🎉 合格ライン':'もう一歩'}</div>
+    <div class="desc">${note}${un?`<br>未解答 ${un}問は不正解として採点しました。`:''}</div>
+    <div class="rstat">
+      <div class="box ok"><div class="n">${correct}</div><div class="l">正解</div></div>
+      <div class="box ng"><div class="n">${wrong}</div><div class="l">不正解</div></div>
+      <div class="box"><div class="n">${Math.floor(timeUsed/60)}<span style="font-size:13px">分</span></div><div class="l">所要時間</div></div>
+    </div>
+    <div class="ref-card" style="text-align:left;margin-top:4px"><h3 style="color:var(--ink);font-size:13px">分野別 正答率・ペース</h3>
+      <div style="margin-top:8px">${rows}</div>
+      <div class="note" style="margin-top:2px">全体平均 ${answeredN?Math.round(timeUsed/answeredN):0}秒/問（本番の目安は約64秒/問）</div></div>
+    <div class="actions" style="flex-direction:column">
+      <button class="btn primary" onclick="renderMockReview(true)">間違えた${Q.wrongIds.length}問を見直す（解説つき）</button>
+      <button class="btn ghost" onclick="renderMockReview(false)">全問を見直す</button>
+      ${Q.wrongIds.length?`<button class="btn bad" onclick="reviewThese()">間違えた問題を解き直す</button>`:''}
+      <button class="btn ghost" onclick="renderHome();setNavActive('home')">ホームへ戻る</button>
+    </div></div>`;
+  MRV={list:Q.list, view4:Q.view4, ansSel:Q.ansSel.slice(), wrongIds:Q.wrongIds.slice(), html:h};
+  main.innerHTML=h; main.scrollTop=0; refreshHeader();
+}
+// 模試の見直し画面: 出題時の選択肢構成のまま、自分の解答と正答・解説を対比表示（v70）
+function renderMockReview(wrongOnly){
+  if(!MRV) { renderHome(); return; }
+  Tview="result";
+  let h=`<div class="screen">
+    <div class="qhead"><div class="qcount" style="font-size:16px">模試の見直し</div>
+      <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="mockResultBack()">← 結果へ</button></div>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="btn ${wrongOnly?'ghost':'primary'}" onclick="renderMockReview(false)">全て（${MRV.list.length}）</button>
+      <button class="btn ${wrongOnly?'primary':'ghost'}" onclick="renderMockReview(true)">間違いのみ（${MRV.wrongIds.length}）</button>
+    </div>`;
+  MRV.list.forEach((q,i)=>{
+    const sel=MRV.ansSel[i], ok=sel!=null && sel===q.o[q.a];
+    if(wrongOnly && ok) return;
+    const v=MRV.view4[i];
+    let opts='';
+    v.opts.forEach((opt,k)=>{
+      const isC=opt===q.o[q.a], isS=opt===sel;
+      opts+=`<div style="border:1px solid ${isC?'var(--good)':isS?'var(--bad)':'var(--line)'};${isC?'color:var(--good);':isS?'color:var(--bad);':''}border-radius:9px;padding:8px 10px;margin-top:6px;font-size:12px;line-height:1.55">${"ABC"[k]}. ${opt}${isC?'　←正答':isS?'　←自分の解答':''}</div>`;
+    });
+    h+=`<div class="ref-card" style="margin-bottom:10px">
+      <div style="font-size:11px;color:var(--sub)">Q${i+1}・${CATS[q.cat].short}${sel==null?'・<span style="color:var(--bad)">未解答</span>':ok?'・正解':'・<span style="color:var(--bad)">不正解</span>'}</div>
+      <div style="font-size:13px;line-height:1.6;margin-top:6px;font-weight:600">${fmtQ(q)}</div>
+      ${opts}
+      <div style="font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.6">${q.e.replace(/\n/g,"<br>")}</div>
+      <div style="font-size:10.5px;color:var(--acc2);margin-top:5px">${q.ref}</div></div>`;
+  });
+  h+=`<button class="btn primary" style="width:100%;margin-top:6px" onclick="mockResultBack()">結果に戻る</button></div>`;
+  main.innerHTML=h; main.scrollTop=0;
+}
+function mockResultBack(){
+  if(MRV && MRV.html){ Tview="result"; main.innerHTML=MRV.html; main.scrollTop=0; }
+  else { renderHome(); setNavActive("home"); }
+}
+// 成績タブ: 直近模試の間違いを保存済み wrongIds から解き直す（v70）
+function reviewMockWrong(){
+  const mocks=S.history.filter(x=>x.mock && x.wrongIds && x.wrongIds.length);
+  const last=mocks[mocks.length-1];
+  if(!last){ toast("対象の問題がありません"); return; }
+  const list=shuffle(BANK.filter(q=>last.wrongIds.includes(q.id)));
+  if(!list.length){ toast("対象の問題がありません"); return; }
+  Q={list,i:0,sel:null,answered:false,correct:0,wrongIds:[],mode:"review",timer:0,tInt:null,mock:false,learn:false,view4:snap4(list)};
+  renderQuiz();
 }
 let _lastWrong=[];
 function reviewThese(){
@@ -1377,7 +1665,7 @@ function renderReview(){
     <button class="btn ghost" onclick="renderHome();setNavActive('home')">ホームへ</button></div>`;
     main.innerHTML=h; main.scrollTop=0; return;
   }
-  h+=`<div class="explain ng" style="margin-bottom:14px"><b>${wrongList.length}問</b>が要復習です。まとめて演習して正解すると、自動でリストから外れます。</div>
+  h+=`<div class="explain ng" style="margin-bottom:14px"><b>${wrongList.length}問</b>が要復習です。連続2回正解すると、自動でリストから外れます。</div>
     <button class="btn bad" style="margin-bottom:14px" onclick="startQuiz('review')">▶ ${wrongList.length}問をまとめて復習</button>`;
   // group by cat
   for(const c of [1,2,3,4,5]){
@@ -1421,13 +1709,32 @@ function renderStats(){
   // mock history
   h+=`<div class="ref-card"><h3 style="color:var(--ink);font-size:13px">模試の記録</h3>`;
   if(lastMock){
-    h+=`<div class="note" style="margin-top:4px">直近: <b style="color:${lastMock.pct>=90?'var(--good)':'var(--bad)'}">${lastMock.pct}%</b>（${lastMock.correct}/${lastMock.total}）・${lastMock.pct>=90?'合格基準達成':'基準未達'}</div>`;
+    const tu=lastMock.timeUsed!=null?`・${Math.floor(lastMock.timeUsed/60)}分`:'';
+    h+=`<div class="note" style="margin-top:4px">直近: <b style="color:${lastMock.pct>=90?'var(--good)':'var(--bad)'}">${lastMock.pct}%</b>（${lastMock.correct}/${lastMock.total}${tu}）・${lastMock.pct>=90?'合格基準達成':'基準未達'}</div>`;
     const recent=mocks.slice(-6);
     h+=`<div style="display:flex;gap:6px;align-items:flex-end;height:70px;margin-top:14px">`;
     recent.forEach(m=>{ h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
       <div style="width:100%;height:${Math.max(8,m.pct*0.55)}px;background:${m.pct>=90?'var(--good)':'var(--bad)'};border-radius:4px 4px 0 0"></div>
       <span style="font-size:9px;color:var(--sub)">${m.pct}</span></div>`; });
     h+=`</div>`;
+    // 分野別トレンド（v70）: byCat 保存済みの模試から直近と前回を比較
+    const mB=mocks.filter(m=>m.byCat);
+    const lb=mB[mB.length-1], pb=mB[mB.length-2];
+    if(lb){
+      h+=`<div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:11px"><div style="font-size:11.5px;font-weight:700;color:var(--sub);margin-bottom:7px">分野別（直近模試・前回比）</div>`;
+      for(const c of [1,2,5,3,4]){
+        const b=lb.byCat[c]; if(!b) continue;
+        const p=Math.round(b.ok/b.n*100);
+        let diff='';
+        if(pb && pb.byCat[c]){
+          const d=p-Math.round(pb.byCat[c].ok/pb.byCat[c].n*100);
+          diff = d>0?`<span style="color:var(--good)">↑+${d}</span>` : d<0?`<span style="color:var(--bad)">↓${d}</span>` : `<span style="color:var(--sub)">→±0</span>`;
+        }
+        h+=`<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px"><span>${CATS[c].short}</span><span style="color:${p>=90?'var(--good)':'var(--bad)'}">${p}%　${diff}</span></div>`;
+      }
+      h+=`</div>`;
+      if(lb.wrongIds && lb.wrongIds.length) h+=`<button class="btn bad" style="width:100%;margin-top:8px" onclick="reviewMockWrong()">直近模試の間違い${lb.wrongIds.length}問を解き直す</button>`;
+    }
   } else {
     h+=`<div class="note" style="margin-top:4px">まだ模試の記録がありません。「模擬試験 70問」に挑戦してみましょう。</div>`;
   }
@@ -1437,7 +1744,7 @@ function renderStats(){
 }
 async function resetAll(){
   if(!confirm("習得状況・復習リスト・成績をすべて消去します。よろしいですか？")) return;
-  S={ known:{}, wrong:{}, seen:{}, streak:S.streak, lastDay:S.lastDay, history:[], attempts:{}, bankVer:S.bankVer };
+  S={ known:{}, wrong:{}, seen:{}, streak:S.streak, lastDay:S.lastDay, history:[], attempts:{}, bankVer:S.bankVer, cs:{}, daily:{}, box:{}, due:{}, srInit:true };
   await save(); toast("リセットしました"); renderStats(); refreshHeader();
 }
 
@@ -1448,6 +1755,7 @@ function setNavActive(name){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.nav===name));
 }
 function setNav(name){
+  if(Tview==='quiz' && Q.mock){ mockLeave(); saveSession(); }   // 模試から離脱する際に滞在時間と残時間を保存
   clearInterval(Q.tInt);   // クイズ/模試から他タブへ移動したらタイマー停止
   setNavActive(name);
   if(name==="home") renderHome();
