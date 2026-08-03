@@ -1191,7 +1191,8 @@ function calcKeysHTML(){
         <button onclick="calcKey('.')">.</button>
         <button onclick="calcKey('\u221a')">\u221a</button>
         <button onclick="calcKey('+')">\uff0b</button>
-        <button class="calc-eq" style="grid-column:span 4" onclick="calcEqual()">\uff1d</button>
+        <button class="calc-eq" style="grid-column:span 3" onclick="calcEqual()">\uff1d</button>
+        <button onclick="calcCopy()" aria-label="\u30b3\u30d4\u30fc" title="\u73fe\u5728\u306e\u6570\u5024\u3092\u30b3\u30d4\u30fc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>`;
 }
 function calcPadHTML(){
@@ -1215,9 +1216,31 @@ function openCalc(){
 function closeCalc(){ var m=$("#calcModalOv"); if(m && m.parentNode) m.parentNode.removeChild(m); }
 function calcShow(){ var t=calcDispText(); var ds=document.querySelectorAll('.calc-disp'); for(var i=0;i<ds.length;i++) ds[i].textContent=t; }
 function toggleCalc(){ const p=$("#calcPad"); if(p) p.style.display = (p.style.display==='none'?'block':'none'); }
-function calcKey(k){ if(calcExpr==='エラー') calcExpr=''; calcExpr += (k==='√'?'√(':k); calcShow(); }
-function calcClear(){ calcExpr=''; calcShow(); }
-function calcDel(){ if(calcExpr==='エラー') calcExpr=''; else calcExpr=calcExpr.slice(0,-1); calcShow(); }
+// iPhone純正電卓に寄せた入力挙動（v71）:
+//  - 「.」は数値の先頭なら「0.」として開始、1つの数値内で2つ目は無視
+//  - 演算子の連打は直前の演算子を置き換え
+//  - 「＝」直後に数字/小数点/√/( を押すと新規計算を開始、演算子なら結果に続けて計算
+let calcEq=false;   // 直前が「＝」の結果表示か
+function calcCurNum(){ const m=calcExpr.match(/(\d*\.?\d*)$/); return m?m[0]:''; }
+function calcKey(k){
+  if(calcExpr==='エラー'){ calcExpr=''; calcEq=false; }
+  const isDigit=/^[0-9]$/.test(k), isOp=(k==='+'||k==='-'||k==='*'||k==='/');
+  if(calcEq){
+    if(isDigit||k==='.'||k==='√'||k==='(') calcExpr='';
+    calcEq=false;
+  }
+  if(k==='.'){
+    const cur=calcCurNum();
+    if(cur.indexOf('.')>=0){ calcShow(); return; }
+    calcExpr += (cur===''?'0.':'.');
+    calcShow(); return;
+  }
+  if(isOp && /[+\-*/]$/.test(calcExpr)){ calcExpr=calcExpr.slice(0,-1)+k; calcShow(); return; }
+  calcExpr += (k==='√'?'√(':k);
+  calcShow();
+}
+function calcClear(){ calcExpr=''; calcEq=false; calcShow(); }
+function calcDel(){ if(calcExpr==='エラー') calcExpr=''; else calcExpr=calcExpr.slice(0,-1); calcEq=false; calcShow(); }
 function calcEqual(){
   if(!calcExpr){ calcShow(); return; }   // 空（表示0）で＝は何もしない
   try{
@@ -1226,8 +1249,32 @@ function calcEqual(){
     if(!/^[0-9+\-*/().\sMathsqrt]*$/.test(e)){ calcExpr='エラー'; calcShow(); return; }
     const r=Function('"use strict";return ('+e+')')();
     calcExpr=(r==null||Number.isNaN(r)||!Number.isFinite(r)||Math.abs(r)>=1e15)?'エラー':String(Math.round(r*1e6)/1e6);
-  }catch(_){ calcExpr='エラー'; }
+    calcEq = calcExpr!=='エラー';
+  }catch(_){ calcExpr='エラー'; calcEq=false; }
   calcShow();
+}
+// 現在の数値（＝の結果表示中は結果全体、入力中は末尾の数値）をコピー（v71）
+function calcCopyText(){
+  if(calcExpr===''||calcExpr==='エラー') return null;
+  if(calcEq) return calcExpr;
+  return calcCurNum() || calcExpr;
+}
+function calcCopy(){
+  const t=calcCopyText();
+  if(t==null){ toast('コピーする数値がありません'); return; }
+  const done=()=>toast('コピーしました: '+t);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done, ()=>calcCopyFallback(t,done));
+  } else calcCopyFallback(t,done);
+}
+function calcCopyFallback(t,done){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta); done();
+  }catch(e){ toast('コピーできません'); }
 }
 function fmtQ(q){
   let t = q.q.replace(/\n/g,"<br>");
