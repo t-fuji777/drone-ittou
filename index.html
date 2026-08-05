@@ -767,7 +767,7 @@ const SYMBOL_CARDS = [
 
 // ---------- Persistent state ----------
 const KEY="ittou_state_v1";
-let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{} };
+let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{}, dueCap:30 };
 
 const dayN = () => Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5);   // ローカル日付基準の日単位整数（Leitner の due 管理用。UTC境界だと日本では朝9時に日付が変わってしまう）
 
@@ -826,10 +826,32 @@ function gradeOne(q, correct){
     S.cs[q.id]=0;
     delete S.known[q.id];
     S.wrong[q.id]=true;
-    S.box[q.id]=0; S.due[q.id]=dayN();
+    // 誤答は翌日に再出題（v72。当日のままだと「今日の復習」の残数が解いても減らないため）
+    S.box[q.id]=0; S.due[q.id]=dayN()+1;
   }
 }
 function dueList(){ const t=dayN(); return BANK.filter(q=>S.due[q.id]!=null && S.due[q.id]<=t && (S.box[q.id]||0)<=5); }
+// 1日の復習上限（v72）。超過分は翌日以降へ自動繰越
+const DUE_CAPS=[20,30,40];
+function dueCap(){ return DUE_CAPS.indexOf(S.dueCap)>=0 ? S.dueCap : 30; }
+function setDueCap(n){ S.dueCap=n; save(); renderHome(); }
+// 期限到来分から上限内で「分野バランス（母数比）＋弱い順」に抽出（v72）
+function dueToday(){
+  const all=dueList(), cap=dueCap();
+  if(all.length<=cap) return shuffle(all);
+  const weak=(a,b)=>((S.box[a.id]||0)-(S.box[b.id]||0))||((S.due[a.id]||0)-(S.due[b.id]||0));
+  const pool={}; for(const c of [1,2,3,4,5]) pool[c]=all.filter(q=>q.cat===c).sort(weak);
+  // 母数比で配分し、端数は最大剰余法で割り当てる
+  const share=[1,2,3,4,5].map(c=>{ const ex=cap*byCat(c).length/BANK.length; return {c, ex, f:ex-Math.floor(ex), n:Math.min(Math.floor(ex), pool[c].length)}; });
+  let left=cap-share.reduce((s,x)=>s+x.n,0);
+  share.slice().sort((a,b)=>b.f-a.f).forEach(s=>{ if(left>0 && s.n<pool[s.c].length){ s.n++; left--; } });
+  let pick=[]; share.forEach(s=>{ pick=pick.concat(pool[s.c].slice(0,s.n)); });
+  if(pick.length<cap){   // その分野の期限到来が少ない場合は他分野の弱い問題で補填
+    const used=new Set(pick.map(q=>q.id));
+    pick=pick.concat(all.filter(q=>!used.has(q.id)).sort(weak).slice(0,cap-pick.length));
+  }
+  return shuffle(pick);
+}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 // ---------- helpers ----------
@@ -859,11 +881,17 @@ function renderHome(){
   let h=`<div class="screen">`;
   if(hasResume()) h+=resumeCardHTML();
 
-  // 今日の復習（Leitner 間隔反復・v70）
-  const dueN=dueList().length;
-  if(dueN) h+=`<div class="ref-card" style="border:1px solid var(--acc2);margin-bottom:14px">
+  // 今日の復習（Leitner 間隔反復・v70／v72で1日の上限と分野バランス）
+  const dueAll=dueList().length, cap=dueCap(), dueN=Math.min(dueAll,cap);
+  if(dueAll) h+=`<div class="ref-card" style="border:1px solid var(--acc2);margin-bottom:14px">
     <h3 style="color:var(--ink);font-size:13px">今日の復習 ${dueN}問</h3>
-    <div class="note" style="margin-top:4px">正解するたびに再出題の間隔が 1→3→7→14→30日 と延びます</div>
+    <div class="note" style="margin-top:4px">${dueAll>dueN
+      ? `期限到来 ${dueAll}問のうち本日分。残りは翌日以降に繰り越します（分野バランスを取って出題）。`
+      : `正解するたびに再出題の間隔が 1→3→7→14→30日 と延びます`}</div>
+    <div style="display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--sub);font-weight:600">1日の上限</span>
+      ${DUE_CAPS.map(n=>`<button class="chip ${cap===n?'on':''}" onclick="setDueCap(${n})">${n}問</button>`).join('')}
+    </div>
     <button class="btn primary" style="width:100%;margin-top:10px" onclick="startQuiz('due')">今日の復習を始める</button></div>`;
 
   // 学習モード（ランダムに暗記・即時フィードバック・三択CBT）
@@ -992,8 +1020,8 @@ function startQuiz(mode,cat){
     learn=true;
   }
   else if(mode==="due"){
-    // 今日の復習（Leitner・v70）: 期限到来分を弱い順（box昇順）に
-    list=shuffle(dueList()).sort((a,b)=>(S.box[a.id]||0)-(S.box[b.id]||0));
+    // 今日の復習（Leitner・v70／v72で上限＋分野バランス）
+    list=dueToday();
     learn=true;
   }
   else { toast("対象の問題がありません"); return; }
@@ -1791,7 +1819,7 @@ function renderStats(){
 }
 async function resetAll(){
   if(!confirm("習得状況・復習リスト・成績をすべて消去します。よろしいですか？")) return;
-  S={ known:{}, wrong:{}, seen:{}, streak:S.streak, lastDay:S.lastDay, history:[], attempts:{}, bankVer:S.bankVer, cs:{}, daily:{}, box:{}, due:{}, srInit:true };
+  S={ known:{}, wrong:{}, seen:{}, streak:S.streak, lastDay:S.lastDay, history:[], attempts:{}, bankVer:S.bankVer, cs:{}, daily:{}, box:{}, due:{}, srInit:true, dueCap:S.dueCap };
   await save(); toast("リセットしました"); renderStats(); refreshHeader();
 }
 
