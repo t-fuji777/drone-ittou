@@ -314,8 +314,14 @@
 .seg button.on{background:var(--acc);color:#04141a}
 /* ---------- 教則検索（v76） ---------- */
 .kyo-box{display:flex;gap:8px;align-items:stretch}
-.kyo-input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
-  border-radius:11px;padding:12px 13px;font-size:14px;font-family:inherit;-webkit-appearance:none}
+.kyo-inwrap{position:relative;flex:1;min-width:0;display:flex}
+.kyo-x{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:26px;height:26px;padding:0;
+  border:none;border-radius:50%;background:var(--line);color:var(--ink);font-size:16px;line-height:1;
+  cursor:pointer;place-items:center;font-family:inherit}
+.kyo-x:active{background:var(--acc);color:#04141a}
+.kyo-input{width:100%;min-width:0;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+  border-radius:11px;padding:12px 40px 12px 13px;font-size:14px;font-family:inherit;-webkit-appearance:none}
+.kyo-input::-webkit-search-cancel-button{display:none}
 .kyo-input::placeholder{color:var(--sub)}
 .kyo-input:focus{outline:none;border-color:var(--acc)}
 .kyo-go{flex:none;width:74px;padding:12px 0}
@@ -1858,7 +1864,9 @@ function kyoRelated(label){
 let kyoQ="", kyoOpen={};
 function kyoToggle(i){ kyoOpen[i]=!kyoOpen[i]; renderKyo(); }
 function kyoAsk(v){ kyoQ=(v==null?(($("#kyoInput")||{}).value||""):v); kyoOpen={}; renderKyo(); }
-function kyoClear(){ kyoQ=""; kyoOpen={}; renderKyo(); }
+function kyoClear(){ kyoQ=""; kyoOpen={}; renderKyo(); const el=$("#kyoInput"); if(el){ el.value=""; el.focus(); } }
+// 入力中も×の表示を切り替える（検索前に打った文字も一括で消せるように）
+function kyoXVis(){ const el=$("#kyoInput"), x=$("#kyoX"); if(el&&x) x.style.display = el.value ? "grid" : "none"; }
 const KYO_QUIZ_MAX=20;   // 1セッションが長くなりすぎないよう上限を設ける
 function kyoQuiz(label){
   const r=kyoRelated(label);
@@ -1874,8 +1882,12 @@ function renderKyo(){
   let h=`<div class="screen"><div class="sec-title">教則を検索（第5版）</div>
     <div class="explain" style="margin-bottom:12px">わからないことを入力すると、<b>教則の内容をやさしく言い換えた解説</b>を表示します。用語でも文章でも構いません（教則の原文も併せて確認できます）。</div>
     <div class="kyo-box">
-      <input id="kyoInput" class="kyo-input" type="search" placeholder="例）リモートIDが免除されるのはどんな場合" value="${kyoEsc(kyoQ)}"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();kyoAsk();}">
+      <div class="kyo-inwrap">
+        <input id="kyoInput" class="kyo-input" type="search" placeholder="例）リモートIDが免除されるのはどんな場合" value="${kyoEsc(kyoQ)}"
+          oninput="kyoXVis()" onkeydown="if(event.key==='Enter'){event.preventDefault();kyoAsk();}">
+        <button id="kyoX" class="kyo-x" aria-label="入力を消す" title="入力を消す"
+          style="display:${kyoQ?'grid':'none'}" onclick="kyoClear()">×</button>
+      </div>
       <button class="btn primary kyo-go" onclick="kyoAsk()">検索</button>
     </div>`;
   if(!kyoQ.trim()){
