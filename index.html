@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>一等学科試験 暗記マスター</title>
-<meta name="description" content="一等無人航空機操縦士 学科試験の暗記アプリ（教則第4版準拠・必勝計算5公式）">
+<meta name="description" content="一等無人航空機操縦士 学科試験の暗記アプリ（教則第5版準拠・必勝計算5公式）">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0e1a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -307,6 +307,7 @@
 .puz-slots{display:flex;flex-wrap:wrap;gap:6px}
 .puz-slot{min-width:38px;padding:9px 10px;border:1.5px dashed var(--line);border-radius:9px;text-align:center;font-size:13.5px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;color:var(--ink)}
 .puz-slot.filled{border-style:solid;background:var(--panel2)}
+.puz-empty{font-size:11.5px;color:var(--sub);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;padding:9px 2px;display:inline-block}
 .puz-slots.ok .puz-slot{border-color:var(--good);color:var(--good)}
 .puz-slots.ng .puz-slot{border-color:var(--bad);color:var(--bad)}
 .puz-pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -331,7 +332,7 @@
         <img class="mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9IiMxYTI0MzgiLz4KICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQxNDIyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8IS0tIDQgcHJvcGVsbGVyIHJpbmdzIC0tPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlmYjBjNCIgc3Ryb2tlLXdpZHRoPSIzLjIiPgogICAgPGNpcmNsZSBjeD0iMjciIGN5PSIyNyIgcj0iMTMiLz4KICAgIDxjaXJjbGUgY3g9IjczIiBjeT0iMjciIHI9IjEzIi8+CiAgICA8Y2lyY2xlIGN4PSIyNyIgY3k9IjczIiByPSIxMyIvPgogICAgPGNpcmNsZSBjeD0iNzMiIGN5PSI3MyIgcj0iMTMiLz4KICA8L2c+CiAgPCEtLSBhcm1zIChYKSAtLT4KICA8ZyBzdHJva2U9IiMzYTRhNjMiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxsaW5lIHgxPSIzNCIgeTE9IjM0IiB4Mj0iNjYiIHkyPSI2NiIvPgogICAgPGxpbmUgeDE9IjY2IiB5MT0iMzQiIHgyPSIzNCIgeTI9IjY2Ii8+CiAgPC9nPgogIDwhLS0gY2VudGVyIGJvZHkgLS0+CiAgPHJlY3QgeD0iMzgiIHk9IjM4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHJ4PSI1IiBmaWxsPSIjYzRjZWRkIiBzdHJva2U9IiM5ZmIwYzQiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPCEtLSBnb2xkIDEgLS0+CiAgPHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iR2VvcmdpYSwgJ1RpbWVzIE5ldyBSb21hbicsIHNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Q0YWYzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPjE8L3RleHQ+Cjwvc3ZnPgo=" alt="アプリアイコン">
         <div>
           <h1>一等学科 暗記マスター</h1>
-          <div class="sub">教則第4版準拠 / 一等無人航空機操縦士</div>
+          <div class="sub">教則第5版準拠 / 一等無人航空機操縦士</div>
         </div>
       </div>
       <div class="streak" id="streak">🔥 <span id="streakN">0</span><span style="margin-left:7px;color:var(--sub);font-weight:600;font-size:11px">今日 <span id="todayN">0</span>問</span></div>
@@ -357,7 +358,7 @@
 
 <script>
 // ============================================================
-//  QUESTION BANK  — 一等無人航空機操縦士 学科試験（教則第4版準拠）
+//  QUESTION BANK  — 一等無人航空機操縦士 学科試験（教則第5版準拠・令和8年7月14日適用）
 //  cat: 1=規則 2=システム 3=操縦者/運航体制 4=リスク管理 5=計算[一等]
 //  lvl: "common"=二等相当 / "one"=一等のみ
 // ============================================================
@@ -1608,21 +1609,66 @@ function nextDeck(){
 function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
 
 // ============================================================
-//  公式カード（選択式）: 数式の部品を順に選んで公式を組み立てるパズル（v65）
-//  tokens=正解の部品列（順序込み）／extra=誤答部品／card=正解時に全文表示する FORMULA_CARDS の index
+//  公式カード（選択式）: 数式の部品を選んで公式を組み立てるパズル（v65、v75で難化）
+//  tokens=正解の部品列（順序込み）／card=正解時に全文表示する FORMULA_CARDS の index
+//  v75: (1) 同じ公式の日本語式・記号式・逆算式（変形式）を別問として収録
+//       (2) 誤答部品は PUZ_DISTRACT からセッション毎にランダム抽出（既定6個）
+//       (3) 解答欄は空欄（スロット）を出さず、部品数のヒントを与えない
 // ============================================================
 const PUZZLES = [
-  {name:"揚力の計算", lhs:"機体重量＝揚力∝", tokens:["空気密度","×","速度²"], extra:["÷","√","速度"], card:0},
-  {name:"推力の計算", lhs:"機体重量＝推力∝", tokens:["空気密度","×","回転角速度²"], extra:["÷","√","回転角速度"], card:1},
-  {name:"消費パワーの計算", lhs:"消費パワー∝", tokens:["空気密度","×","回転角速度³","∝","推力","×","回転角速度"], extra:["÷","√","回転角速度²"], card:2},
-  {name:"旋回半径(バンク角)の計算", lhs:"旋回半径＝", tokens:["速度²","÷","(","重力加速度","×","tan〇°",")"], extra:["√","速度","sin〇°"], card:3},
-  {name:"滑空距離の計算", lhs:"滑空距離＝", tokens:["高度","×","揚抗比"], extra:["÷","√","速度"], card:4},
-  {name:"滑空角の計算", lhs:"滑空角＝", tokens:["1","÷","揚抗比"], extra:["×","√","高度"], card:5},
-  {name:"定常旋回飛行の揚力の計算", lhs:"定常旋回飛行の揚力＝", tokens:["1","÷","cosφ"], extra:["×","tanφ","sinφ"], card:6},
-  {name:"水平到達距離の計算", lhs:"水平(到達)距離＝", tokens:["速度","×","√","(","2×高度","÷","重力加速度",")"], extra:["+","高度²","tan〇°"], card:7},
-  {name:"波長の計算", lhs:"波長＝", tokens:["光速度","÷","周波数"], extra:["×","√","距離"], card:8},
-  {name:"フレネルゾーンの計算", lhs:"フレネルゾーン半径＝", tokens:["√","(","波長","×","半距離","×","半距離","÷","距離",")"], extra:["周波数","+","光速度"], card:8},
+  // ---- 揚力 ----
+  {name:"揚力の計算（日本語式）", lhs:"機体重量＝揚力∝", tokens:["空気密度","×","速度²"], card:0},
+  {name:"揚力の計算（記号式）", lhs:"W＝L∝", tokens:["ρ","×","V²"], card:0},
+  {name:"揚力の計算（速度²を求める）", lhs:"V²＝", tokens:["L","÷","ρ"], card:0},
+  {name:"揚力の計算（速度を求める）", lhs:"V＝", tokens:["√","(","L","÷","ρ",")"], card:0},
+  // ---- 推力 ----
+  {name:"推力の計算（日本語式）", lhs:"機体重量＝推力∝", tokens:["空気密度","×","回転角速度²"], card:1},
+  {name:"推力の計算（記号式）", lhs:"W＝T∝", tokens:["ρ","×","ω²"], card:1},
+  {name:"推力の計算（回転角速度²を求める）", lhs:"ω²＝", tokens:["T","÷","ρ"], card:1},
+  {name:"推力の計算（回転角速度を求める）", lhs:"ω＝", tokens:["√","(","T","÷","ρ",")"], card:1},
+  // ---- 消費パワー ----
+  {name:"消費パワーの計算（日本語式）", lhs:"消費パワー∝", tokens:["空気密度","×","回転角速度³"], card:2},
+  {name:"消費パワーの計算（記号式）", lhs:"P∝", tokens:["ρ","×","ω³"], card:2},
+  {name:"消費パワーの計算（推力で表す）", lhs:"P∝", tokens:["T","×","ω"], card:2},
+  {name:"消費パワーの計算（推力から求める）", lhs:"P＝", tokens:["ρ","×","√","(","T","÷","ρ",")³"], card:2},
+  // ---- 旋回半径（バンク角） ----
+  {name:"旋回半径の計算（日本語式）", lhs:"旋回半径＝", tokens:["速度²","÷","(","重力加速度","×","tan〇°",")"], card:3},
+  {name:"旋回半径の計算（記号式）", lhs:"r＝", tokens:["V²","÷","g","×","tanφ"], card:3},
+  {name:"旋回半径の計算（速度²を求める）", lhs:"V²＝", tokens:["r","×","g","×","tanφ"], card:3},
+  {name:"旋回半径の計算（速度を求める）", lhs:"V＝", tokens:["√","(","r","×","g","×","tanφ",")"], card:3},
+  {name:"旋回半径の計算（バンク角を求める）", lhs:"tanφ＝", tokens:["(","V²","÷","r",")","÷","g"], card:3},
+  // ---- 滑空距離 ----
+  {name:"滑空距離の計算（日本語式）", lhs:"滑空距離＝", tokens:["高度","×","揚抗比"], card:4},
+  {name:"滑空距離の計算（記号式）", lhs:"d＝", tokens:["h","×","(L/D)"], card:4},
+  {name:"滑空距離の計算（高度を求める）", lhs:"h＝", tokens:["d","÷","(L/D)"], card:4},
+  // ---- 滑空角 ----
+  {name:"滑空角の計算（日本語式）", lhs:"滑空角＝", tokens:["1","÷","揚抗比"], card:5},
+  {name:"滑空角の計算（記号式）", lhs:"tanφ＝", tokens:["1","÷","(L/D)"], card:5},
+  // ---- 定常旋回飛行の揚力 ----
+  {name:"定常旋回飛行の揚力の計算", lhs:"定常旋回飛行の揚力＝", tokens:["1","÷","cosφ"], card:6},
+  // ---- 水平到達距離 ----
+  {name:"水平到達距離の計算（日本語式）", lhs:"水平(到達)距離＝", tokens:["速度","×","√","(","2×高度","÷","重力加速度",")"], card:7},
+  {name:"水平到達距離の計算（記号式）", lhs:"x＝", tokens:["v","×","√","(","2h","÷","g",")"], card:7},
+  // ---- 波長 ----
+  {name:"波長の計算（日本語式）", lhs:"波長＝", tokens:["光速度","÷","周波数"], card:8},
+  {name:"波長の計算（記号式・2.4GHz）", lhs:"λ＝", tokens:["(3×10⁸)","÷","(2.4×10⁹)"], card:8},
+  // ---- フレネルゾーン ----
+  {name:"フレネルゾーンの計算（日本語式）", lhs:"フレネルゾーン半径＝", tokens:["√","(","波長","×","半距離","×","半距離","÷","距離",")"], card:8},
+  {name:"フレネルゾーンの計算（記号式）", lhs:"r＝", tokens:["√","(","λ","×","D1","×","D2","÷","D",")"], card:8},
 ];
+// 誤答部品の候補（公式カード別）。正解に含まれる部品は自動で除外し、毎回ランダムに抽出する
+const PUZ_DISTRACT = {
+  0:["√","÷","+","V","L","ρ","速度","揚力","速度³","空気密度²"],
+  1:["√","÷","+","ω","T","ρ","回転角速度","推力","回転角速度³"],
+  2:["÷","+","√","ω²","ω","T","ρ","回転角速度","回転角速度²","推力"],
+  3:["√","+","sinφ","cosφ","V","r","g","tanφ","速度","重力加速度","tan〇°","sin〇°"],
+  4:["÷","+","√","d","h","(L/D)","高度","揚抗比","滑空角"],
+  5:["×","+","√","(L/D)","2","揚抗比","高度","cosφ"],
+  6:["×","+","√","sinφ","tanφ","cosφ","2","揚抗比"],
+  7:["+","÷","×","h","g","2","v","2h","速度","高度","重力加速度","2×速度"],
+  8:["+","×","÷","√","λ","D","D1","D2","半距離","距離","光速度","周波数","(3×10⁸)","(2.4×10⁹)"],
+};
+const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
 
 let P={i:0,pool:[],sel:[],state:"",firstTry:true,correct:0};
 
@@ -1633,16 +1679,19 @@ function startPuzzle(){
 }
 function puzzSetup(){
   const p=PUZZLES[P.i];
-  P.pool=shuffle([...p.tokens, ...p.extra]);
+  // 誤答部品は候補から「正解に含まれないもの」だけをランダム抽出（毎回変わる）
+  const dis=(PUZ_DISTRACT[p.card]||[]).filter(t=>p.tokens.indexOf(t)<0);
+  const extra=shuffle(dis).slice(0, Math.min(PUZ_EXTRA_N, dis.length));
+  P.pool=shuffle([...p.tokens, ...extra]);
   P.sel=[]; P.state=""; P.firstTry=true;
 }
 function renderPuzzle(){
   Tview="puzzle";
   const p=PUZZLES[P.i], total=PUZZLES.length;
-  const slots=p.tokens.map((_,k)=>{
-    const t = k<P.sel.length ? P.pool[P.sel[k]] : "";
-    return `<span class="puz-slot ${t?'filled':''}">${t||'&nbsp;'}</span>`;
-  }).join("");
+  // 解答欄は空スロットを出さない（部品数のヒントを与えない・v75）
+  const slots = P.sel.length
+    ? P.sel.map(k=>`<span class="puz-slot filled">${P.pool[k]}</span>`).join("")
+    : `<span class="puz-empty">下の部品をタップして式を組み立ててください</span>`;
   const pool=P.pool.map((t,k)=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${t}</button>`).join("");
   let fb="";
   if(P.state==="ok"){
@@ -1665,20 +1714,24 @@ function renderPuzzle(){
       <div class="puz-lhs">${p.lhs}</div>
       <div class="puz-slots ${P.state}">${slots}</div></div>
     <div class="puz-pool">${pool}</div>
-    <div class="actions" style="margin-top:14px">
-      <button class="btn ghost" style="flex:.6" onclick="puzzUndo()" ${(!P.sel.length||P.state)?'disabled':''}>1つ戻す</button>
-      <button class="btn ghost" style="flex:.6" onclick="puzzRetry()" ${(!P.sel.length||P.state)?'disabled':''}>リセット</button>
+    <div class="actions" style="margin-top:14px;gap:8px">
+      <button class="btn ghost" style="flex:.55" onclick="puzzUndo()" ${(!P.sel.length||P.state)?'disabled':''}>1つ戻す</button>
+      <button class="btn ghost" style="flex:.55" onclick="puzzRetry()" ${(!P.sel.length||P.state)?'disabled':''}>リセット</button>
+      <button class="btn primary" style="flex:.9" onclick="puzzJudge()" ${(!P.sel.length||P.state)?'disabled':''}>判定する</button>
     </div>${fb}</div>`;
   main.innerHTML=h; main.scrollTop=0; fitFH(main);
 }
 function puzzPick(k){
   if(P.state||P.sel.includes(k)) return;
-  const p=PUZZLES[P.i];
-  P.sel.push(k);
-  if(P.sel.length===p.tokens.length){
-    if(P.sel.map(x=>P.pool[x]).join("")===p.tokens.join("")){ if(P.firstTry) P.correct++; P.state="ok"; }
-    else { P.state="ng"; P.firstTry=false; }
-  }
+  P.sel.push(k);            // v75: 自動判定はしない（部品数から答えが割れるため）
+  renderPuzzle();
+}
+function puzzJudge(){
+  if(P.state||!P.sel.length) return;
+  const p=PUZZLES[P.i], got=P.sel.map(x=>P.pool[x]);
+  const ok = got.length===p.tokens.length && got.every((t,i)=>t===p.tokens[i]);
+  if(ok){ if(P.firstTry) P.correct++; P.state="ok"; }
+  else { P.state="ng"; P.firstTry=false; }
   renderPuzzle();
 }
 function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzle(); }
