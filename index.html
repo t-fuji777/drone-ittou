@@ -1342,6 +1342,13 @@ function calcEqual(){
     let e=calcExpr.replace(/√/g,'Math.sqrt').replace(/×/g,'*').replace(/÷/g,'/');
     e=e.replace(/(^|[^\d.])0+(?=\d)/g,'$1');   // 先頭ゼロを正規化（strict mode の8進リテラル禁止で「05」等がエラーになるのを防ぐ）
     if(!/^[0-9+\-*/().\sMathsqrt]*$/.test(e)){ calcExpr='エラー'; calcShow(); return; }
+    // v79: 閉じ括弧を書かずに＝を押してもエラーにしない
+    //   ・末尾の演算子は無視（「5+」→「5」）
+    //   ・足りない「)」を自動で補う（「√(16」→「√(16)」）
+    e=e.replace(/[+\-*\/]+$/,"");
+    if(!e){ calcExpr=''; calcEq=false; calcShow(); return; }
+    const nOpen=(e.match(/\(/g)||[]).length, nClose=(e.match(/\)/g)||[]).length;
+    if(nOpen>nClose) e += ")".repeat(nOpen-nClose);
     const r=Function('"use strict";return ('+e+')')();
     calcExpr=(r==null||Number.isNaN(r)||!Number.isFinite(r)||Math.abs(r)>=1e15)?'エラー':String(Math.round(r*1e6)/1e6);
     calcEq = calcExpr!=='エラー';
