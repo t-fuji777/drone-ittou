@@ -308,9 +308,12 @@
 .calc-fab{position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;cursor:pointer;padding:0}
 .calc-fab:active{transform:scale(.93)}
 /* ---------- 公式カード（選択式）パズル ---------- */
-.puz-lhs{font-size:14px;font-weight:800;color:var(--acc2);margin:2px 0 10px;font-family:'Courier New',ui-monospace,monospace}
-.puz-slots{display:flex;flex-wrap:wrap;gap:6px}
-.puz-slot{min-width:34px;padding:9px 9px;border:1.5px dashed var(--line);border-radius:9px;text-align:center;font-size:12.5px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;color:var(--ink)}
+.puz-slots{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px}
+.puz-slot{min-width:34px;min-height:42px;padding:5px 8px;border:1.5px dashed var(--line);border-radius:9px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+/* v83: 部品は上段＝文言、下段＝記号の2段表示 */
+.pw{font-size:10px;font-weight:700;line-height:1.15;color:var(--sub);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;white-space:nowrap}
+.ps{font-size:13px;font-weight:800;line-height:1.2;color:var(--ink);font-family:'Courier New',ui-monospace,monospace;white-space:nowrap}
+.puz-rel{font-size:15px;font-weight:900;color:var(--acc2);padding:0 3px;font-family:'Courier New',ui-monospace,monospace}
 .puz-slot.filled{border-style:solid;background:var(--panel2)}
 /* ---------- セグメント切替（計算公式／記号一覧・v77） ---------- */
 .seg{display:flex;gap:5px;background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:4px;margin-bottom:16px}
@@ -340,11 +343,13 @@
 .kyo-src{margin-top:8px;padding:10px 12px;background:var(--panel2);border-left:3px solid var(--line);border-radius:8px;
   font-size:11.5px;line-height:1.8;color:var(--sub);overflow-wrap:anywhere}
 .kyo-hl{background:rgba(61,220,132,.22);color:var(--good);font-weight:700;border-radius:3px;padding:0 1px}
-.puz-empty{font-size:11.5px;color:var(--sub);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;padding:9px 2px;display:inline-block}
-.puz-slots.ok .puz-slot{border-color:var(--good);color:var(--good)}
-.puz-slots.ng .puz-slot{border-color:var(--bad);color:var(--bad)}
+.puz-empty{font-size:11.5px;color:var(--sub);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;padding:8px 2px 0}
+.puz-slots.ok .puz-slot{border-color:var(--good)}
+.puz-slots.ok .puz-slot .pw,.puz-slots.ok .puz-slot .ps{color:var(--good)}
+.puz-slots.ng .puz-slot{border-color:var(--bad)}
+.puz-slots.ng .puz-slot .pw,.puz-slots.ng .puz-slot .ps{color:var(--bad)}
 .puz-pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.puz-pool button{padding:11px 10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;font-size:13px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;cursor:pointer}
+.puz-pool button{min-height:46px;padding:6px 10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 .puz-pool button:disabled{opacity:.22}
 .puz-pool button:active{transform:scale(.95)}
 /* ---------- 模試CBT（解答状況グリッド・ペース警告） ---------- */
@@ -1660,55 +1665,57 @@ function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
 // ============================================================
 const PUZZLES = [
   // ---- 揚力 ----
-  {name:"揚力の計算", lhs:"機体重量(W)＝揚力(L)∝", tokens:["空気密度(ρ)", "×", "速度²(V²)"], card:0},
-  {name:"揚力の計算（速度²を求める）", lhs:"速度²(V²)＝", tokens:["揚力(L)", "÷", "空気密度(ρ)"], card:0},
-  {name:"揚力の計算（速度を求める）", lhs:"速度(V)＝", tokens:["√", "(", "揚力(L)", "÷", "空気密度(ρ)", ")"], card:0},
+  {name:"揚力の計算", all:["機体重量(W)", "＝", "揚力(L)", "∝", "空気密度(ρ)", "×", "速度²(V²)"], card:0},
+  {name:"揚力の計算（速度²を求める）", all:["速度²(V²)", "＝", "揚力(L)", "÷", "空気密度(ρ)"], card:0},
+  {name:"揚力の計算（速度を求める）", all:["速度(V)", "＝", "√", "(", "揚力(L)", "÷", "空気密度(ρ)", ")"], card:0},
   // ---- 推力 ----
-  {name:"推力の計算", lhs:"機体重量(W)＝推力(T)∝", tokens:["空気密度(ρ)", "×", "回転角速度²(ω²)"], card:1},
-  {name:"推力の計算（回転角速度²を求める）", lhs:"回転角速度²(ω²)＝", tokens:["推力(T)", "÷", "空気密度(ρ)"], card:1},
-  {name:"推力の計算（回転角速度を求める）", lhs:"回転角速度(ω)＝", tokens:["√", "(", "推力(T)", "÷", "空気密度(ρ)", ")"], card:1},
+  {name:"推力の計算", all:["機体重量(W)", "＝", "推力(T)", "∝", "空気密度(ρ)", "×", "回転角速度²(ω²)"], card:1},
+  {name:"推力の計算（回転角速度²を求める）", all:["回転角速度²(ω²)", "＝", "推力(T)", "÷", "空気密度(ρ)"], card:1},
+  {name:"推力の計算（回転角速度を求める）", all:["回転角速度(ω)", "＝", "√", "(", "推力(T)", "÷", "空気密度(ρ)", ")"], card:1},
   // ---- 消費パワー ----
-  {name:"消費パワーの計算", lhs:"消費パワー(P)∝", tokens:["空気密度(ρ)", "×", "回転角速度³(ω³)"], card:2},
-  {name:"消費パワーの計算（推力で表す）", lhs:"消費パワー(P)∝", tokens:["推力(T)", "×", "回転角速度(ω)"], card:2},
-  {name:"消費パワーの計算（推力を求める）", lhs:"推力(T)＝", tokens:["空気密度(ρ)", "×", "回転角速度²(ω²)"], card:2},
-  {name:"消費パワーの計算（推力から求める）", lhs:"消費パワー(P)＝", tokens:["空気密度(ρ)", "×", "√", "(", "推力(T)", "÷", "空気密度(ρ)", ")³"], card:2},
+  {name:"消費パワーの計算", all:["消費パワー(P)", "∝", "空気密度(ρ)", "×", "回転角速度³(ω³)"], card:2},
+  {name:"消費パワーの計算（推力で表す）", all:["消費パワー(P)", "∝", "推力(T)", "×", "回転角速度(ω)"], card:2},
+  {name:"消費パワーの計算（推力を求める）", all:["推力(T)", "＝", "空気密度(ρ)", "×", "回転角速度²(ω²)"], card:2},
+  {name:"消費パワーの計算（推力から求める）", all:["消費パワー(P)", "＝", "空気密度(ρ)", "×", "√", "(", "推力(T)", "÷", "空気密度(ρ)", ")³"], card:2},
   // ---- 旋回半径（バンク角） ----
-  {name:"旋回半径の計算", lhs:"旋回半径(r)＝", tokens:["速度²(V²)", "÷", "(", "重力加速度(g)", "×", "バンク角(tanφ)", ")"], card:3},
-  {name:"旋回半径の計算（速度²を求める）", lhs:"速度²(V²)＝", tokens:["旋回半径(r)", "×", "重力加速度(g)", "×", "バンク角(tanφ)"], card:3},
-  {name:"旋回半径の計算（速度を求める）", lhs:"速度(V)＝", tokens:["√", "(", "旋回半径(r)", "×", "重力加速度(g)", "×", "バンク角(tanφ)", ")"], card:3},
-  {name:"旋回半径の計算（バンク角を求める）", lhs:"バンク角(tanφ)＝", tokens:["(", "速度²(V²)", "÷", "旋回半径(r)", ")", "÷", "重力加速度(g)"], card:3},
-  {name:"旋回半径の計算（重力加速度×tanφを求める）", lhs:"重力加速度(g)×バンク角(tanφ)＝", tokens:["速度²(V²)", "÷", "旋回半径(r)"], card:3},
+  {name:"旋回半径の計算", all:["旋回半径(r)", "＝", "速度²(V²)", "÷", "(", "重力加速度(g)", "×", "バンク角(tanφ)", ")"], card:3},
+  {name:"旋回半径の計算（速度²を求める）", all:["速度²(V²)", "＝", "旋回半径(r)", "×", "重力加速度(g)", "×", "バンク角(tanφ)"], card:3},
+  {name:"旋回半径の計算（速度を求める）", all:["速度(V)", "＝", "√", "(", "旋回半径(r)", "×", "重力加速度(g)", "×", "バンク角(tanφ)", ")"], card:3},
+  {name:"旋回半径の計算（バンク角を求める）", all:["バンク角(tanφ)", "＝", "(", "速度²(V²)", "÷", "旋回半径(r)", ")", "÷", "重力加速度(g)"], card:3},
+  {name:"旋回半径の計算（重力加速度×tanφを求める）", all:["重力加速度(g)", "×", "バンク角(tanφ)", "＝", "速度²(V²)", "÷", "旋回半径(r)"], card:3},
   // ---- 滑空距離 ----
-  {name:"滑空距離の計算", lhs:"滑空距離(d)＝", tokens:["高度(h)", "×", "揚抗比(L/D)"], card:4},
-  {name:"滑空距離の計算（高度を求める）", lhs:"高度(h)＝", tokens:["滑空距離(d)", "÷", "揚抗比(L/D)"], card:4},
-  {name:"滑空距離の計算（揚抗比を求める）", lhs:"揚抗比(L/D)＝", tokens:["滑空距離(d)", "÷", "高度(h)"], card:4},
+  {name:"滑空距離の計算", all:["滑空距離(d)", "＝", "高度(h)", "×", "揚抗比(L/D)"], card:4},
+  {name:"滑空距離の計算（高度を求める）", all:["高度(h)", "＝", "滑空距離(d)", "÷", "揚抗比(L/D)"], card:4},
+  {name:"滑空距離の計算（揚抗比を求める）", all:["揚抗比(L/D)", "＝", "滑空距離(d)", "÷", "高度(h)"], card:4},
   // ---- 滑空角 ----
-  {name:"滑空角の計算", lhs:"滑空角(tanφ)＝", tokens:["1", "÷", "揚抗比(L/D)"], card:5},
-  {name:"滑空角の計算（揚抗比を求める）", lhs:"揚抗比(L/D)＝", tokens:["1", "÷", "滑空角(tanφ)"], card:5},
+  {name:"滑空角の計算", all:["滑空角(tanφ)", "＝", "1", "÷", "揚抗比(L/D)"], card:5},
+  {name:"滑空角の計算（揚抗比を求める）", all:["揚抗比(L/D)", "＝", "1", "÷", "滑空角(tanφ)"], card:5},
   // ---- 定常旋回飛行の揚力 ----
-  {name:"定常旋回飛行の揚力の計算", lhs:"定常旋回飛行の揚力(L)＝", tokens:["1", "÷", "バンク角(cosφ)"], card:6},
-  {name:"定常旋回飛行の揚力の計算（cosφを求める）", lhs:"バンク角(cosφ)＝", tokens:["1", "÷", "定常旋回飛行の揚力(L)"], card:6},
+  {name:"定常旋回飛行の揚力の計算", all:["定常旋回飛行の揚力(L)", "＝", "1", "÷", "バンク角(cosφ)"], card:6},
+  {name:"定常旋回飛行の揚力の計算（cosφを求める）", all:["バンク角(cosφ)", "＝", "1", "÷", "定常旋回飛行の揚力(L)"], card:6},
   // ---- 水平到達距離 ----
-  {name:"水平到達距離の計算", lhs:"水平到達距離(x)＝", tokens:["速度(v)", "×", "√", "(", "2×高度(2h)", "÷", "重力加速度(g)", ")"], card:7},
+  {name:"水平到達距離の計算", all:["水平到達距離(x)", "＝", "速度(v)", "×", "√", "(", "2×高度(2h)", "÷", "重力加速度(g)", ")"], card:7},
   // ---- 波長・フレネルゾーン ----
-  {name:"波長の計算", lhs:"波長(λ)＝", tokens:["光速度(c)", "÷", "周波数(f)"], card:8},
-  {name:"波長の計算（2.4GHzの波長を求める）", lhs:"波長(λ)＝", tokens:["(3×10⁸)", "÷", "(2.4×10⁹)"], card:8},
-  {name:"波長の計算（周波数を求める）", lhs:"周波数(f)＝", tokens:["光速度(c)", "÷", "波長(λ)"], card:8},
-  {name:"波長の計算（光速度を求める）", lhs:"光速度(c)＝", tokens:["波長(λ)", "×", "周波数(f)"], card:8},
-  {name:"フレネルゾーン半径の計算", lhs:"フレネルゾーン半径(r)＝", tokens:["√", "(", "波長(λ)", "×", "半距離(D1)", "×", "半距離(D2)", "÷", "距離(D)", ")"], card:8},
+  {name:"波長の計算", all:["波長(λ)", "＝", "光速度(c)", "÷", "周波数(f)"], card:8},
+  {name:"波長の計算（2.4GHzの波長を求める）", all:["波長(λ)", "＝", "(3×10⁸)", "÷", "(2.4×10⁹)"], card:8},
+  {name:"波長の計算（周波数を求める）", all:["周波数(f)", "＝", "光速度(c)", "÷", "波長(λ)"], card:8},
+  {name:"波長の計算（光速度を求める）", all:["光速度(c)", "＝", "波長(λ)", "×", "周波数(f)"], card:8},
+  {name:"フレネルゾーン半径の計算", all:["フレネルゾーン半径(r)", "＝", "√", "(", "波長(λ)", "×", "半距離(D1)", "×", "半距離(D2)", "÷", "距離(D)", ")"], card:8},
 ];
+// v83: all は左辺＋＝/∝＋右辺の全体。＝と∝は固定表示、それ以外は選択式
 // v81: 部品は「文言(記号)」のセット表記。誤答部品は PUZ_SIB（正解部品と紛らわしい相手）を優先して抽出する
 const PUZ_SIB = {
   "空気密度(ρ)":["重力加速度(g)", "機体重量(W)", "消費パワー(P)", "抗力(D)"],
   "重力加速度(g)":["空気密度(ρ)", "高度(h)", "機体重量(W)"],
-  "速度(V)":["速度²(V²)", "速度³(V³)", "回転角速度(ω)", "速度(v)"],
+  "速度(V)":["速度²(V²)", "速度³(V³)", "回転角速度(ω)"],
   "速度²(V²)":["速度³(V³)", "速度(V)", "回転角速度²(ω²)"],
-  "速度(v)":["速度(V)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)"],
+  "速度(v)":["速度²(V²)", "回転角速度(ω)", "2×高度(2h)"],
   "回転角速度(ω)":["回転角速度²(ω²)", "回転角速度³(ω³)", "速度(V)"],
   "回転角速度²(ω²)":["回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)"],
   "回転角速度³(ω³)":["回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)"],
   "揚力(L)":["推力(T)", "抗力(D)", "機体重量(W)", "消費パワー(P)"],
   "推力(T)":["揚力(L)", "抗力(D)", "機体重量(W)", "消費パワー(P)"],
+  "機体重量(W)":["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)"],
   "消費パワー(P)":["推力(T)", "揚力(L)", "機体重量(W)"],
   "旋回半径(r)":["フレネルゾーン半径(r)", "高度(h)", "滑空距離(d)", "距離(D)"],
   "高度(h)":["2×高度(2h)", "滑空距離(d)", "距離(D)", "旋回半径(r)"],
@@ -1739,18 +1746,20 @@ const PUZ_SIB = {
 };
 // siblings だけで誤答が足りないときに補うカード別プール
 const PUZ_DISTRACT = {
-  0:["重力加速度(g)", "機体重量(W)", "消費パワー(P)", "抗力(D)", "÷", "+", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "推力(T)", "×", ")³", ")", "(", "√"],
-  1:["重力加速度(g)", "機体重量(W)", "消費パワー(P)", "抗力(D)", "÷", "+", "回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)", "揚力(L)", "×", ")³", ")", "(", "√"],
-  2:["重力加速度(g)", "機体重量(W)", "消費パワー(P)", "抗力(D)", "÷", "+", "回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)", "揚力(L)", "回転角速度³(ω³)", "速度(V)", "速度²(V²)", ")³", ")", "×", "√", "("],
-  3:["速度³(V³)", "速度(V)", "回転角速度²(ω²)", "×", "+", ")", ")³", "空気密度(ρ)", "高度(h)", "機体重量(W)", "÷", "バンク角(sinφ)", "バンク角(cosφ)", "滑空角(tanφ)", "(", "フレネルゾーン半径(r)", "滑空距離(d)", "距離(D)", "√"],
-  4:["2×高度(2h)", "滑空距離(d)", "距離(D)", "旋回半径(r)", "÷", "+", "滑空角(tanφ)", "揚力(L)", "抗力(D)", "機体重量(W)", "水平到達距離(x)", "高度(h)", "×", "√", "(", ")"],
-  5:["揚力(L)", "機体重量(W)", "√", "×", "+", "滑空角(tanφ)", "抗力(D)", "バンク角(tanφ)", "バンク角(sinφ)", "バンク角(cosφ)", "揚抗比(L/D)", "(", ")", "÷"],
-  6:["揚力(L)", "機体重量(W)", "√", "×", "+", "バンク角(sinφ)", "バンク角(tanφ)", "滑空角(tanφ)", "揚抗比(L/D)", "抗力(D)", "(", ")", "÷"],
-  7:["速度(V)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)", "÷", "+", ")³", ")", "高度(h)", "滑空距離(d)", "距離(D)", "水平到達距離(x)", "×", "空気密度(ρ)", "機体重量(W)", "(", "√"],
-  8:["周波数(f)", "波長(λ)", "速度(V)", "×", "+", "光速度(c)", "(2.4×10⁹)", "(3×10⁸)", "距離(D)", "÷", ")³", ")", "半距離(D2)", "滑空距離(d)", "半距離(D1)", "高度(h)", "旋回半径(r)", "(", "√"],
+  0:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "÷", "+", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "×", "速度²(V²)", "回転角速度(ω)", ")³", ")", "(", "√"],
+  1:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "÷", "+", "回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)", "×", "回転角速度²(ω²)", "速度(V)", ")³", ")", "(", "√"],
+  2:["推力(T)", "揚力(L)", "機体重量(W)", "重力加速度(g)", "消費パワー(P)", "抗力(D)", "÷", "+", "回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)", "回転角速度³(ω³)", "速度(V)", "速度²(V²)", ")³", ")", "×", "√", "("],
+  3:["フレネルゾーン半径(r)", "高度(h)", "滑空距離(d)", "距離(D)", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "×", "+", ")", ")³", "空気密度(ρ)", "機体重量(W)", "÷", "バンク角(sinφ)", "バンク角(cosφ)", "滑空角(tanφ)", "(", "速度²(V²)", "回転角速度(ω)", "√"],
+  4:["距離(D)", "水平到達距離(x)", "高度(h)", "旋回半径(r)", "2×高度(2h)", "滑空距離(d)", "÷", "+", "滑空角(tanφ)", "揚力(L)", "抗力(D)", "機体重量(W)", "×", "√", "(", ")"],
+  5:["バンク角(tanφ)", "バンク角(sinφ)", "バンク角(cosφ)", "揚抗比(L/D)", "揚力(L)", "機体重量(W)", "√", "×", "+", "滑空角(tanφ)", "抗力(D)", "(", ")", "÷"],
+  6:["揚力(L)", "揚抗比(L/D)", "機体重量(W)", "抗力(D)", "√", "×", "+", "バンク角(sinφ)", "バンク角(tanφ)", "滑空角(tanφ)", "(", ")", "÷"],
+  7:["滑空距離(d)", "距離(D)", "高度(h)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)", "÷", "+", ")³", ")", "水平到達距離(x)", "×", "空気密度(ρ)", "機体重量(W)", "(", "√"],
+  8:["周波数(f)", "光速度(c)", "距離(D)", "波長(λ)", "速度(V)", "×", "+", "(2.4×10⁹)", "(3×10⁸)", "÷", "旋回半径(r)", "半距離(D1)", ")³", ")", "半距離(D2)", "滑空距離(d)", "高度(h)", "(", "√"],
 };
 // 演算子・数字の部品（左辺に出ていても誤答候補として使える）
 const PUZ_OPS = ["(", ")", ")³", "+", "1", "×", "÷", "√"];
+// 固定表示の関係記号（選択式にしない）
+const PUZ_REL = ["∝", "＝"];
 const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
 const PUZ_GAP = 4;       // 同じ公式カードの出題を最低これだけ離す（v81）
 
@@ -1780,32 +1789,45 @@ function startPuzzle(){
   //      同一カードの出題を最低 PUZ_GAP 問離す（他モードの spaceOut と同じ方式）。
   P={i:0,list:puzzRotate(spaceOut(shuffle(PUZZLES.slice()), PUZ_GAP, p=>'card'+p.card), PUZ_GAP),
      pool:[],sel:[],state:"",firstTry:true,correct:0};
-  puzzSetup(); renderPuzzle();
+  puzzSetup(); renderPuzzle(true);
+}
+// v83: ＝と∝は固定表示。それ以外（左辺の用語も含む）が選択式の部品。
+const puzAns = p => p.all.filter(t=>PUZ_REL.indexOf(t)<0);
+// v83: 部品は「文言(記号)」を上下2段に分けて表示する
+function puzChip(t){
+  const m=/^([^()]+)\((.+)\)$/.exec(t);
+  return m ? `<span class="pw">${m[1]}</span><span class="ps">${m[2]}</span>` : `<span class="ps">${t}</span>`;
 }
 function puzzSetup(){
-  const p=P.list[P.i];
+  const p=P.list[P.i], ans=puzAns(p);
   // v81: 誤答部品は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、
   //      足りない分だけカード別プール（PUZ_DISTRACT）から補う。毎回ランダムに変わる。
-  //      正解に使う部品と、左辺に出ている用語は誤答に含めない（演算子は除く）。
-  const has=t=>p.tokens.indexOf(t)>=0||(PUZ_OPS.indexOf(t)<0&&p.lhs.indexOf(t)>=0);
+  const has=t=>ans.indexOf(t)>=0;
   const sib=[];
-  p.tokens.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
+  ans.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
   const extra=shuffle(sib).slice(0, PUZ_EXTRA_N);
   if(extra.length<PUZ_EXTRA_N){
     const rest=(PUZ_DISTRACT[p.card]||[]).filter(t=>!has(t)&&extra.indexOf(t)<0);
     extra.push(...shuffle(rest).slice(0, PUZ_EXTRA_N-extra.length));
   }
-  P.pool=shuffle([...p.tokens, ...extra]);
+  P.pool=shuffle([...ans, ...extra]);
   P.sel=[]; P.state=""; P.firstTry=true;
 }
-function renderPuzzle(){
+function renderPuzzle(reset){
   Tview="puzzle";
-  const p=P.list[P.i], total=P.list.length;
-  // 解答欄は空スロットを出さない（部品数のヒントを与えない・v75）
-  const slots = P.sel.length
-    ? P.sel.map(k=>`<span class="puz-slot filled">${P.pool[k]}</span>`).join("")
-    : `<span class="puz-empty">下の部品をタップして式を組み立ててください</span>`;
-  const pool=P.pool.map((t,k)=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${t}</button>`).join("");
+  const p=P.list[P.i], total=P.list.length, keep=main.scrollTop;   // reset は出題が切り替わるときだけ true
+  // 解答欄は空スロットを出さない（部品数のヒントを与えない・v75）。
+  // ＝と∝は固定表示のまま並べ、選んだ部品を左から順に埋めていく（v83）。
+  let f=0;
+  const slots = p.all.map(t=>{
+    if(PUZ_REL.indexOf(t)>=0) return `<span class="puz-rel">${t}</span>`;
+    const j=f++;
+    return j<P.sel.length ? `<span class="puz-slot filled">${puzChip(P.pool[P.sel[j]])}</span>` : "";
+  }).join("")
+  // 正解の部品数を超えて選んだぶんも末尾に表示する（見えないと「正しい式なのに不正解」になり操作が効かないように見える）
+  + P.sel.slice(f).map(k=>`<span class="puz-slot filled">${puzChip(P.pool[k])}</span>`).join("");
+  const hint = P.sel.length ? "" : `<div class="puz-empty">下の部品をタップして式を組み立ててください</div>`;
+  const pool=P.pool.map((t,k)=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${puzChip(t)}</button>`).join("");
   let fb="";
   if(P.state==="ok"){
     fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
@@ -1813,7 +1835,7 @@ function renderPuzzle(){
       <div class="actions"><button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button></div>`;
   } else if(P.state==="ng"){
     fb=`<div class="explain ng" style="margin-top:14px"><div class="res">不正解</div>
-      <div style="font-size:13px;margin-top:6px;line-height:1.7">正しい式：${p.lhs}${p.tokens.join(" ")}</div></div>
+      <div style="font-size:13px;margin-top:6px;line-height:1.7;overflow-wrap:anywhere">正しい式：${p.all.join(" ")}</div></div>
       <div class="actions">
         <button class="btn ghost" onclick="puzzRetry()">もう一度</button>
         <button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button>
@@ -1824,15 +1846,14 @@ function renderPuzzle(){
       <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
     <div class="qmini-bar"><i style="width:${P.i/total*100}%"></i></div>
     <div class="qcard"><div class="qnum">${p.name}</div>
-      <div class="puz-lhs">${p.lhs}</div>
-      <div class="puz-slots ${P.state}">${slots}</div></div>
+      <div class="puz-slots ${P.state}">${slots}</div>${hint}</div>
     <div class="puz-pool">${pool}</div>
     <div class="actions" style="margin-top:14px;gap:8px">
       <button class="btn ghost" style="flex:.55" onclick="puzzUndo()" ${(!P.sel.length||P.state)?'disabled':''}>1つ戻す</button>
       <button class="btn ghost" style="flex:.55" onclick="puzzRetry()" ${(!P.sel.length||P.state)?'disabled':''}>リセット</button>
       <button class="btn primary" style="flex:.9" onclick="puzzJudge()" ${(!P.sel.length||P.state)?'disabled':''}>判定する</button>
     </div>${fb}</div>`;
-  main.innerHTML=h; main.scrollTop=0; fitFH(main);
+  main.innerHTML=h; main.scrollTop = reset ? 0 : keep; fitFH(main);
 }
 function puzzPick(k){
   if(P.state||P.sel.includes(k)) return;
@@ -1841,8 +1862,8 @@ function puzzPick(k){
 }
 function puzzJudge(){
   if(P.state||!P.sel.length) return;
-  const p=P.list[P.i], got=P.sel.map(x=>P.pool[x]);
-  const ok = got.length===p.tokens.length && got.every((t,i)=>t===p.tokens[i]);
+  const p=P.list[P.i], ans=puzAns(p), got=P.sel.map(x=>P.pool[x]);
+  const ok = got.length===ans.length && got.every((t,i)=>t===ans[i]);
   if(ok){ if(P.firstTry) P.correct++; P.state="ok"; }
   else { P.state="ng"; P.firstTry=false; }
   renderPuzzle();
@@ -1851,7 +1872,7 @@ function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzl
 function puzzRetry(){ P.sel=[]; P.state=""; renderPuzzle(); }
 function puzzNext(){
   if(P.i>=P.list.length-1){ renderPuzzleResult(); return; }
-  P.i++; puzzSetup(); renderPuzzle();
+  P.i++; puzzSetup(); renderPuzzle(true);
 }
 function renderPuzzleResult(){
   Tview="puzzle";
