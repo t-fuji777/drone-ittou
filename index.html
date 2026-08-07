@@ -349,6 +349,8 @@
 .puz-slots.ng .puz-slot{border-color:var(--bad)}
 .puz-slots.ng .puz-slot .pw,.puz-slots.ng .puz-slot .ps{color:var(--bad)}
 .puz-pool{display:flex;flex-wrap:wrap;gap:8px}
+.puz-pool.ops{gap:6px}
+.puz-pool.ops button{flex:1;min-width:0;padding:6px 2px}
 .puz-cap{font-size:10.5px;font-weight:800;color:var(--sub);letter-spacing:.08em;margin:14px 2px 6px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif}
 .puz-pool button{min-height:46px;padding:6px 10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 .puz-pool button:disabled{opacity:.22}
@@ -1695,10 +1697,10 @@ const PUZZLES = [
   {name:"定常旋回飛行の揚力の計算", all:["定常旋回飛行の揚力(L)", "＝", "1", "÷", "バンク角(cosφ)"], card:6},
   {name:"定常旋回飛行の揚力の計算（cosφを求める）", all:["バンク角(cosφ)", "＝", "1", "÷", "定常旋回飛行の揚力(L)"], card:6},
   // ---- 水平到達距離 ----
-  {name:"水平到達距離の計算", all:["水平到達距離(x)", "＝", "速度(v)", "×", "√", "(", "2×高度(2h)", "÷", "重力加速度(g)", ")"], card:7},
+  {name:"水平到達距離の計算", all:["水平到達距離(x)", "＝", "速度(V)", "×", "√", "(", "2×高度(2h)", "÷", "重力加速度(g)", ")"], card:7},
   // ---- 波長・フレネルゾーン ----
   {name:"波長の計算", all:["波長(λ)", "＝", "光速度(c)", "÷", "周波数(f)"], card:8},
-  {name:"波長の計算（2.4GHzの波長を求める）", all:["波長(λ)", "＝", "(3×10⁸)", "÷", "(2.4×10⁹)"], card:8},
+  {name:"波長の計算（2.4GHzの波長を求める）", all:["波長(λ)", "＝", "光速度(3×10⁸)", "÷", "周波数(2.4×10⁹)"], card:8},
   {name:"波長の計算（周波数を求める）", all:["周波数(f)", "＝", "光速度(c)", "÷", "波長(λ)"], card:8},
   {name:"波長の計算（光速度を求める）", all:["光速度(c)", "＝", "波長(λ)", "×", "周波数(f)"], card:8},
   {name:"フレネルゾーン半径の計算", all:["フレネルゾーン半径(r)", "＝", "√", "(", "波長(λ)", "×", "半距離(D1)", "×", "半距離(D2)", "÷", "距離(D)", ")"], card:8},
@@ -1708,9 +1710,8 @@ const PUZZLES = [
 const PUZ_SIB = {
   "空気密度(ρ)":["重力加速度(g)", "機体重量(W)", "消費パワー(P)", "抗力(D)"],
   "重力加速度(g)":["空気密度(ρ)", "高度(h)", "機体重量(W)"],
-  "速度(V)":["速度²(V²)", "速度³(V³)", "回転角速度(ω)"],
+  "速度(V)":["速度²(V²)", "速度³(V³)", "回転角速度(ω)", "2×高度(2h)"],
   "速度²(V²)":["速度³(V³)", "速度(V)", "回転角速度²(ω²)"],
-  "速度(v)":["速度²(V²)", "回転角速度(ω)", "2×高度(2h)"],
   "回転角速度(ω)":["回転角速度²(ω²)", "回転角速度³(ω³)", "速度(V)"],
   "回転角速度²(ω²)":["回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)"],
   "回転角速度³(ω³)":["回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)"],
@@ -1728,37 +1729,30 @@ const PUZ_SIB = {
   "バンク角(cosφ)":["バンク角(sinφ)", "バンク角(tanφ)", "滑空角(tanφ)"],
   "定常旋回飛行の揚力(L)":["揚力(L)", "揚抗比(L/D)", "機体重量(W)", "抗力(D)"],
   "波長(λ)":["周波数(f)", "光速度(c)", "距離(D)"],
-  "光速度(c)":["周波数(f)", "波長(λ)", "速度(V)"],
-  "周波数(f)":["波長(λ)", "光速度(c)", "速度(V)"],
+  "光速度(c)":["周波数(f)", "波長(λ)", "速度(V)", "光速度(3×10⁸)"],
+  "周波数(f)":["波長(λ)", "光速度(c)", "速度(V)", "周波数(2.4×10⁹)"],
   "半距離(D1)":["半距離(D2)", "距離(D)", "滑空距離(d)"],
   "半距離(D2)":["半距離(D1)", "距離(D)", "高度(h)"],
   "距離(D)":["半距離(D1)", "半距離(D2)", "滑空距離(d)", "旋回半径(r)"],
   "フレネルゾーン半径(r)":["旋回半径(r)", "距離(D)", "半距離(D1)"],
   "水平到達距離(x)":["滑空距離(d)", "距離(D)", "高度(h)"],
-  "(3×10⁸)":["(2.4×10⁹)", "光速度(c)"],
-  "(2.4×10⁹)":["(3×10⁸)", "周波数(f)"],
-  "1":["揚力(L)", "機体重量(W)", "√"],
-  "×":["÷", "+"],
-  "÷":["×", "+"],
-  "√":[")³", "+"],
-  "(":[")", ")³"],
-  ")":[")³", "("],
-  ")³":[")", "√"],
+  "光速度(3×10⁸)":["周波数(2.4×10⁹)", "光速度(c)", "波長(λ)"],
+  "周波数(2.4×10⁹)":["光速度(3×10⁸)", "周波数(f)", "波長(λ)"],
 };
 // siblings だけで誤答が足りないときに補うカード別プール
 const PUZ_DISTRACT = {
-  0:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "÷", "+", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "×", "速度²(V²)", "回転角速度(ω)", ")³", ")", "(", "√"],
-  1:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "÷", "+", "回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)", "×", "回転角速度²(ω²)", "速度(V)", ")³", ")", "(", "√"],
-  2:["推力(T)", "揚力(L)", "機体重量(W)", "重力加速度(g)", "消費パワー(P)", "抗力(D)", "÷", "+", "回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)", "回転角速度³(ω³)", "速度(V)", "速度²(V²)", ")³", ")", "×", "√", "("],
-  3:["フレネルゾーン半径(r)", "高度(h)", "滑空距離(d)", "距離(D)", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "×", "+", ")", ")³", "空気密度(ρ)", "機体重量(W)", "÷", "バンク角(sinφ)", "バンク角(cosφ)", "滑空角(tanφ)", "(", "速度²(V²)", "回転角速度(ω)", "√"],
-  4:["距離(D)", "水平到達距離(x)", "高度(h)", "旋回半径(r)", "2×高度(2h)", "滑空距離(d)", "÷", "+", "滑空角(tanφ)", "揚力(L)", "抗力(D)", "機体重量(W)", "×", "√", "(", ")"],
-  5:["バンク角(tanφ)", "バンク角(sinφ)", "バンク角(cosφ)", "揚抗比(L/D)", "揚力(L)", "機体重量(W)", "√", "×", "+", "滑空角(tanφ)", "抗力(D)", "(", ")", "÷"],
-  6:["揚力(L)", "揚抗比(L/D)", "機体重量(W)", "抗力(D)", "√", "×", "+", "バンク角(sinφ)", "バンク角(tanφ)", "滑空角(tanφ)", "(", ")", "÷"],
-  7:["滑空距離(d)", "距離(D)", "高度(h)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)", "÷", "+", ")³", ")", "水平到達距離(x)", "×", "空気密度(ρ)", "機体重量(W)", "(", "√"],
-  8:["周波数(f)", "光速度(c)", "距離(D)", "波長(λ)", "速度(V)", "×", "+", "(2.4×10⁹)", "(3×10⁸)", "÷", "旋回半径(r)", "半距離(D1)", ")³", ")", "半距離(D2)", "滑空距離(d)", "高度(h)", "(", "√"],
+  0:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)", "空気密度(ρ)", "高度(h)", "回転角速度³(ω³)", "滑空距離(d)", "距離(D)", "水平到達距離(x)"],
+  1:["揚力(L)", "推力(T)", "抗力(D)", "消費パワー(P)", "機体重量(W)", "重力加速度(g)", "回転角速度³(ω³)", "回転角速度(ω)", "速度²(V²)", "回転角速度²(ω²)", "速度(V)", "空気密度(ρ)", "高度(h)", "速度³(V³)", "2×高度(2h)"],
+  2:["推力(T)", "揚力(L)", "機体重量(W)", "重力加速度(g)", "消費パワー(P)", "抗力(D)", "回転角速度²(ω²)", "回転角速度(ω)", "速度³(V³)", "回転角速度³(ω³)", "速度(V)", "速度²(V²)", "空気密度(ρ)", "高度(h)", "2×高度(2h)"],
+  3:["フレネルゾーン半径(r)", "高度(h)", "滑空距離(d)", "距離(D)", "速度³(V³)", "速度(V)", "回転角速度²(ω²)", "空気密度(ρ)", "機体重量(W)", "バンク角(sinφ)", "バンク角(cosφ)", "滑空角(tanφ)", "速度²(V²)", "回転角速度(ω)", "2×高度(2h)", "旋回半径(r)", "半距離(D1)", "水平到達距離(x)", "半距離(D2)", "回転角速度³(ω³)", "重力加速度(g)", "消費パワー(P)", "抗力(D)", "揚力(L)", "推力(T)", "バンク角(tanφ)", "揚抗比(L/D)"],
+  4:["距離(D)", "水平到達距離(x)", "高度(h)", "旋回半径(r)", "2×高度(2h)", "滑空距離(d)", "滑空角(tanφ)", "揚力(L)", "抗力(D)", "機体重量(W)", "半距離(D1)", "半距離(D2)", "フレネルゾーン半径(r)", "バンク角(tanφ)", "バンク角(sinφ)", "バンク角(cosφ)", "揚抗比(L/D)", "推力(T)", "消費パワー(P)"],
+  5:["バンク角(tanφ)", "バンク角(sinφ)", "バンク角(cosφ)", "揚抗比(L/D)", "揚力(L)", "機体重量(W)", "滑空角(tanφ)", "抗力(D)", "推力(T)", "消費パワー(P)"],
+  6:["揚力(L)", "揚抗比(L/D)", "機体重量(W)", "抗力(D)", "バンク角(sinφ)", "バンク角(tanφ)", "滑空角(tanφ)", "推力(T)", "消費パワー(P)", "バンク角(cosφ)"],
+  7:["滑空距離(d)", "距離(D)", "高度(h)", "速度²(V²)", "速度³(V³)", "回転角速度(ω)", "2×高度(2h)", "水平到達距離(x)", "空気密度(ρ)", "機体重量(W)", "旋回半径(r)", "半距離(D1)", "半距離(D2)", "速度(V)", "回転角速度²(ω²)", "回転角速度³(ω³)", "重力加速度(g)", "消費パワー(P)", "抗力(D)", "揚力(L)", "推力(T)"],
+  8:["周波数(f)", "光速度(c)", "距離(D)", "波長(λ)", "速度(V)", "光速度(3×10⁸)", "周波数(2.4×10⁹)", "旋回半径(r)", "半距離(D1)", "半距離(D2)", "滑空距離(d)", "高度(h)", "速度²(V²)", "速度³(V³)", "回転角速度(ω)", "2×高度(2h)", "フレネルゾーン半径(r)", "水平到達距離(x)"],
 };
-// 演算子・数字の部品（左辺に出ていても誤答候補として使える）
-const PUZ_OPS = ["(", ")", ")³", "+", "1", "×", "÷", "√"];
+// v85: 記号パレット。毎回この順で全部表示し、何度でも使える（答えのヒントにならない）
+const PUZ_OPS = ["(", ")", ")³", "√", "×", "÷", "+", "1"];
 // 固定表示の関係記号（選択式にしない）
 const PUZ_REL = ["∝", "＝"];
 const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
@@ -1803,17 +1797,19 @@ function puzChip(t){
 }
 function puzzSetup(){
   const p=P.list[P.i], ans=puzAns(p);
-  // v81: 誤答部品は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、
-  //      足りない分だけカード別プール（PUZ_DISTRACT）から補う。毎回ランダムに変わる。
-  const has=t=>ans.indexOf(t)>=0;
+  // v85: 記号（PUZ_OPS）は毎回すべて固定パレットで出し、何度でも使える。
+  //      よってプールに並べるのは「単語」だけ。重複も除くので使用回数のヒントも出ない。
+  const terms=[...new Set(ans.filter(puzIsTerm))];
+  const has=t=>terms.indexOf(t)>=0;
+  // 誤答は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、足りない分だけカード別プールから補う
   const sib=[];
-  ans.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
+  terms.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
   const extra=shuffle(sib).slice(0, PUZ_EXTRA_N);
   if(extra.length<PUZ_EXTRA_N){
     const rest=(PUZ_DISTRACT[p.card]||[]).filter(t=>!has(t)&&extra.indexOf(t)<0);
     extra.push(...shuffle(rest).slice(0, PUZ_EXTRA_N-extra.length));
   }
-  P.pool=shuffle([...ans, ...extra]);
+  P.pool=shuffle([...terms, ...extra]);
   P.sel=[]; P.state=""; P.firstTry=true;
 }
 function renderPuzzle(reset){
@@ -1825,17 +1821,17 @@ function renderPuzzle(reset){
   const slots = p.all.map(t=>{
     if(PUZ_REL.indexOf(t)>=0) return `<span class="puz-rel">${t}</span>`;
     const j=f++;
-    return j<P.sel.length ? `<span class="puz-slot filled">${puzChip(P.pool[P.sel[j]])}</span>` : "";
+    return j<P.sel.length ? `<span class="puz-slot filled">${puzChip(P.sel[j])}</span>` : "";
   }).join("")
   // 正解の部品数を超えて選んだぶんも末尾に表示する（見えないと「正しい式なのに不正解」になり操作が効かないように見える）
-  + P.sel.slice(f).map(k=>`<span class="puz-slot filled">${puzChip(P.pool[k])}</span>`).join("");
+  + P.sel.slice(f).map(t=>`<span class="puz-slot filled">${puzChip(t)}</span>`).join("");
   const hint = P.sel.length ? "" : `<div class="puz-empty">下の部品をタップして式を組み立ててください</div>`;
-  // v84: 部品は【記号】（演算子・数値）と【単語】（文言(記号)のセット）に上下で分けて並べる
-  const btn=k=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${puzChip(P.pool[k])}</button>`;
-  const idx=P.pool.map((t,k)=>k);
-  const gSym=idx.filter(k=>!puzIsTerm(P.pool[k])), gWord=idx.filter(k=>puzIsTerm(P.pool[k]));
-  const grp=(cap,ks)=>ks.length?`<div class="puz-cap">${cap}</div><div class="puz-pool">${ks.map(btn).join("")}</div>`:"";
-  const pool=grp("記号",gSym)+grp("単語",gWord);
+  // v84/85: 部品は【記号】（固定パレット・1段）と【単語】（毎回変わる候補）に上下で分けて並べる
+  const dis=P.state?'disabled':'';
+  const ops=PUZ_OPS.map((t,k)=>`<button onclick="puzzPick('o',${k})" ${dis}>${puzChip(t)}</button>`).join("");
+  const words=P.pool.map((t,k)=>`<button onclick="puzzPick('w',${k})" ${dis}>${puzChip(t)}</button>`).join("");
+  const pool=`<div class="puz-cap">記号</div><div class="puz-pool ops">${ops}</div>`
+            +`<div class="puz-cap">単語</div><div class="puz-pool">${words}</div>`;
   let fb="";
   if(P.state==="ok"){
     fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
@@ -1863,14 +1859,15 @@ function renderPuzzle(reset){
     </div>${fb}</div>`;
   main.innerHTML=h; main.scrollTop = reset ? 0 : keep; fitFH(main);
 }
-function puzzPick(k){
-  if(P.state||P.sel.includes(k)) return;
-  P.sel.push(k);            // v75: 自動判定はしない（部品数から答えが割れるため）
+function puzzPick(src,k){
+  if(P.state) return;
+  // v85: 記号も単語も何度でも選べる（使用回数がヒントにならないようにするため）
+  P.sel.push(src==='o' ? PUZ_OPS[k] : P.pool[k]);   // v75: 自動判定はしない（部品数から答えが割れるため）
   renderPuzzle();
 }
 function puzzJudge(){
   if(P.state||!P.sel.length) return;
-  const p=P.list[P.i], ans=puzAns(p), got=P.sel.map(x=>P.pool[x]);
+  const p=P.list[P.i], ans=puzAns(p), got=P.sel;
   const ok = got.length===ans.length && got.every((t,i)=>t===ans[i]);
   if(ok){ if(P.firstTry) P.correct++; P.state="ok"; }
   else { P.state="ng"; P.firstTry=false; }
