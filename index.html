@@ -245,6 +245,12 @@
 
   /* ---------- Calc reference ---------- */
   .ref-card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px}
+/* v95: 「◯◯を求める場合」を公式の下にオレンジ枠で独立表示する */
+.fcases{margin-top:11px;display:flex;flex-direction:column;gap:8px}
+.fcase{border:1px solid var(--acc2);border-left:3px solid var(--acc2);border-radius:10px;padding:9px 11px;background:rgba(255,182,39,.06)}
+.fcase .ft{font-size:11px;font-weight:800;color:var(--acc2);margin-bottom:5px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;overflow-wrap:anywhere}
+.fcase .fq{font-size:13px;font-weight:700;font-family:'Courier New',ui-monospace,monospace;color:var(--ink);line-height:1.85;overflow-wrap:anywhere;word-break:keep-all}
+.fcase .fe{font-size:10.5px;color:var(--sub);margin-top:5px;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;overflow-wrap:anywhere}
   .ref-card h3{font-size:14px;font-weight:900;color:var(--acc2);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .ref-card .when{font-size:10.5px;color:var(--sub);margin-bottom:11px}
   .ref-card .formula{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc2);
@@ -783,16 +789,26 @@ const CATS = {
 
 // ---------- 公式カード（表:名称 → 裏:公式） ----------
 const FORMULA_CARDS = [
-  {term:"揚力の計算", formula:"【公式】機体重量=揚力∝空気密度×速度²<br>　記号式：W=L∝ρV²　例：揚力は何倍（速度・空気密度が変わったとき）<br>　① V²=L /ρ　例：速度は何倍<br>　　V =±√(L /ρ)<br>　　V =√(L /ρ)<br>※V(km/h) ×√(L /ρ)=〇〇km/h　例：荷物や高度が変わった後の速度は何km/h"},
-  {term:"推力の計算", formula:"【公式】機体重量=推力∝空気密度×回転角速度²<br>　記号式：W=T∝ρω²　例：推力は何倍（回転角速度・空気密度が変わったとき）<br>　①ω²=T /ρ　例：何倍で〇高度でホバリング<br>　　ω =±√(T /ρ)<br>※ω(rad/s) ×√(T /ρ)=〇〇rad/s　例：改造後はrad/sでホバリング"},
-  {term:"消費パワーの計算", formula:"【公式】消費パワー∝空気密度×回転角速度³∝推力×回転角速度<br>　記号式：P∝ρω³∝Tω　例：消費パワーは何倍（回転角速度が変わったとき）<br>　①T  =ρ×ω²　例：ホバリングをするための消費パワーは何倍<br>　　ω²=T /ρ<br>　　ω =±√(T /ρ)<br>　　P  =ρ×√(T /ρ)³　例：総重量が変わったとき消費パワーは何W"},
-  {term:"旋回半径(バンク角)の計算", formula:"【公式】旋回半径=速度²÷(重力加速度×tan〇°)<br>　記号式：r=V²/(g×tanφ)　例：旋回半径は何m<br>　①V²=r×g×tanφ　例：飛行機の速度は何m/s<br>　　V =±√(r×g×tanφ)<br>　　V =√(r×g×tanφ)<br>　②g×tanφ=V²/r　例：バンク角は何°<br>　　　tanφ=(V²/r)/g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる"},
-  {term:"滑空距離の計算", formula:"【公式】滑空距離=高度×揚抗比<br>　記号式：d=h×(L/D)　例：滑空距離は何m（いちばん長いのはどれか）<br>　①h=d/(L/D)　例：エンジンを停止するタイミングは高度何m<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる"},
-  {term:"滑空角の計算", formula:"【公式】tan(滑空角)=1÷揚抗比<br>　記号式：tanγ=1/(L/D)　例：滑空角は何°（tan表から選ぶ）<br>※揚抗比が大きいほど、滑空角は小さくなる"},
-  {term:"定常旋回飛行の揚力の計算", formula:"【公式】定常旋回飛行の揚力=水平定常飛行の揚力(機体重量)÷cos〇°<br>　記号式：L=W/cosφ　例：水平定常飛行の何倍の揚力が必要か<br>※水平定常飛行に対して1/cosφ倍の揚力が必要"},
-  {term:"水平到達距離の計算", formula:"【公式】水平(到達)距離=速度×√((2×高度)/重力加速度)<br>　記号式：x=V×√(2h/g)　例：落下するまでの水平距離は何m<br>　①V=x/√(2h/g)　例：水平距離を〇mに抑える最高速度は何m/s<br>　②h=(x/V)²×g/2　例：水平距離を〇mに抑える高度は何m<br>※速度が大きいほど、水平距離は長くなる<br>※高度が高いほど、水平距離は長くなる"},
-  {term:"波長、フレネルゾーンの計算", formula:"【公式】波長=光速度(m/s)/周波数(Hz)<br>　記号式：λ=(3×10⁸)/(2.4×10⁹)=0.125m　例：〇GHzの波長は何m<br>　　※波長：0.125m → 12.5cm<br>　〇kHz=〇×10³Hz<br>　〇MHz=〇×10⁶Hz<br>　〇GHz=〇×10⁹Hz<br><br>【公式】フレネルゾーン半径=√((波長×半距離×半距離)/距離)<br>　記号式：R=√((λ×D1×D2)/D)<br>　①D1=D2=D/2(中心地点)　例：アンテナ間〇mの中心の半径は何m<br>　②必要なアンテナ高さ=R×0.6以上　例：半径の60%は何m<br>※波長が長い（周波数が低い）と半径は大きくなる<br>※距離が長いと半径は大きくなる<br>※D1=D2の時、半径は最大となる"},
-  {term:"バッテリーの計算", formula:"【公式】バッテリーの用語と求め方（教則 4.4）<br>　電圧(V)=セル当たりの電圧(V)×セル数<br>　　※リチウムポリマーバッテリーは1セル3.7V。例：3.7V×4セル=14.8V<br>　　※電圧降下=抵抗(Ω)×電流(A)<br>　出力(W)=放電時電圧(V)×電流(A)<br>　容量(Ah)=電流(A)×時間(h)<br>　エネルギー容量(Wh)=放電時電圧(V)×電流(A)×時間(h)<br>　充電率(%)=現時点で放電できる電気量(Ah)÷満充電時に放電できる電気量(Ah)<br>※容量(Ah)は使える「電気量」、エネルギー容量(Wh)は「仕事量」。混同しない<br>※出力を一定に保つと、電池残量が減る→放電時電圧が下がる→必要な電流は増える<br>※放電時の電流の大きさや温度によって、利用できる容量は変化する"},
+  {term:"揚力の計算", formula:"【公式】機体重量=揚力∝空気密度×速度²<br>　記号式：W=L∝ρV²　例：揚力は何倍（速度・空気密度が変わったとき）<br>　① V²=L /ρ　例：速度は何倍<br>　　V =±√(L /ρ)<br>　　V =√(L /ρ)<br>※V(km/h) ×√(L /ρ)=〇〇km/h　例：荷物や高度が変わった後の速度は何km/h",
+   cases:[{for:"揚力を求める場合",fml:"W=L∝ρV²\n揚力の倍率=空気密度の倍率×(速度の倍率)²",ex:"空気密度が〇倍・速度が〇倍になったとき揚力は何倍か（重量を上回れば機体は上昇）",src:"出題"},{for:"速度を求める場合",fml:"V²∝L/ρ　V∝√(L/ρ)\n変化後の速度=変化前の速度×√(揚力の倍率÷空気密度の倍率)",ex:"荷物を積んで重量が〇倍になったとき、または空気密度が〇倍の高度で、水平定常飛行に必要な速度は何km/h",src:"出題"},{for:"空気密度を求める場合",fml:"ρ∝L/V²\n空気密度の倍率=揚力の倍率÷(速度の倍率)²",ex:"速度が〇倍でも同じ揚力を保つには空気密度は何倍か",src:"変形"}]},
+  {term:"推力の計算", formula:"【公式】機体重量=推力∝空気密度×回転角速度²<br>　記号式：W=T∝ρω²　例：推力は何倍（回転角速度・空気密度が変わったとき）<br>　①ω²=T /ρ　例：何倍で〇高度でホバリング<br>　　ω =±√(T /ρ)<br>※ω(rad/s) ×√(T /ρ)=〇〇rad/s　例：改造後はrad/sでホバリング",
+   cases:[{for:"推力を求める場合",fml:"W=T∝ρω²（ホバリング時は W=T）\n推力の倍率=空気密度の倍率×(回転角速度の倍率)²",ex:"回転角速度が〇倍・空気密度が〇倍になったとき推力は何倍か",src:"出題"},{for:"回転角速度を求める場合",fml:"ω²∝T/ρ　ω∝√(T/ρ)\n変更後のω=変更前のω(rad/s)×√(推力(＝機体重量)の倍率÷空気密度の倍率)",ex:"カメラを積んで重量が変わった後、または空気密度が〇倍の地点で、ホバリングに必要な回転角速度は何rad/s（何倍）か",src:"出題"},{for:"空気密度を求める場合",fml:"ρ∝T/ω²\n空気密度の倍率=推力の倍率÷(回転角速度の倍率)²",ex:"同じ回転角速度で推力が〇倍になるとき空気密度は何倍か",src:"変形"}]},
+  {term:"消費パワーの計算", formula:"【公式】消費パワー∝空気密度×回転角速度³∝推力×回転角速度<br>　記号式：P∝ρω³∝Tω　例：消費パワーは何倍（回転角速度が変わったとき）<br>　①T  =ρ×ω²　例：ホバリングをするための消費パワーは何倍<br>　　ω²=T /ρ<br>　　ω =±√(T /ρ)<br>　　P  =ρ×√(T /ρ)³　例：総重量が変わったとき消費パワーは何W",
+   cases:[{for:"消費パワーを求める場合（回転角速度から）",fml:"P∝ρω³∝Tω\n消費パワーの倍率=(回転角速度の倍率)³（空気密度が一定のとき）",ex:"回転角速度が〇倍になったとき消費パワーは何倍か",src:"出題"},{for:"消費パワーを求める場合（機体重量・空気密度から）",fml:"W=T∝ρω² より ω∝√(T/ρ)\nP=ρ×√(T/ρ)³",ex:"総重量が〇kgに変わったときホバリングの消費パワーは何W／空気密度が〇倍のとき消費パワーは何倍か",src:"出題"},{for:"推力を求める場合",fml:"T=ρ×ω²",ex:"ホバリングの消費パワーを出す前段として、推力（＝機体重量）を回転角速度から求める",src:"出題"}]},
+  {term:"旋回半径(バンク角)の計算", formula:"【公式】旋回半径=速度²÷(重力加速度×tan〇°)<br>　記号式：r=V²/(g×tanφ)　例：旋回半径は何m<br>　①V²=r×g×tanφ　例：飛行機の速度は何m/s<br>　　V =±√(r×g×tanφ)<br>　　V =√(r×g×tanφ)<br>　②g×tanφ=V²/r　例：バンク角は何°<br>　　　tanφ=(V²/r)/g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる",
+   cases:[{for:"旋回半径を求める場合",fml:"r=V²/(g×tanφ)",ex:"飛行速度〇m/s、バンク角〇°のときの旋回半径は何m",src:"出題"},{for:"速度を求める場合",fml:"V²=r×g×tanφ\nV =√(r×g×tanφ)",ex:"旋回半径〇m、バンク角〇°のときの飛行速度は何m/s",src:"出題"},{for:"バンク角を求める場合",fml:"g×tanφ=V²/r\ntanφ=V²/(r×g)",ex:"旋回半径〇m、速度〇m/sのときのバンク角は何°（tanの値から角度を選ぶ）",src:"出題"}]},
+  {term:"滑空距離の計算", formula:"【公式】滑空距離=高度×揚抗比<br>　記号式：d=h×(L/D)　例：滑空距離は何m（いちばん長いのはどれか）<br>　①h=d/(L/D)　例：エンジンを停止するタイミングは高度何m<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる",
+   cases:[{for:"滑空距離を求める場合",fml:"d=h×(L/D)",ex:"揚抗比と高度から滑空距離は何m（4つのうち最も長いのはどれか）",src:"出題"},{for:"高度を求める場合",fml:"h=d÷(L/D)",ex:"揚抗比〇の飛行機で〇m先まで滑空したい。エンジンを停止する高度は何m",src:"出題"}]},
+  {term:"滑空角の計算", formula:"【公式】tan(滑空角)=1÷揚抗比<br>　記号式：tanγ=1/(L/D)　例：滑空角は何°（tan表から選ぶ）<br>※揚抗比が大きいほど、滑空角は小さくなる",
+   cases:[{for:"滑空角を求める場合",fml:"tanγ=1/(L/D)\nγ=tan⁻¹(1/(L/D))",ex:"揚抗比〇の定常滑空飛行での滑空角は何°（tan表から選ぶ）",src:"出題"},{for:"揚抗比を求める場合",fml:"(L/D)=1/tanγ",ex:"滑空角（tanγ）から揚抗比はいくつか",src:"変形"}]},
+  {term:"定常旋回飛行の揚力の計算", formula:"【公式】定常旋回飛行の揚力=水平定常飛行の揚力(機体重量)÷cos〇°<br>　記号式：L=W/cosφ　例：水平定常飛行の何倍の揚力が必要か<br>※水平定常飛行に対して1/cosφ倍の揚力が必要",
+   cases:[{for:"必要な揚力を求める場合",fml:"L=W/cosφ\nL/W=1/cosφ（水平定常飛行の何倍か）",ex:"バンク角〇°の定常旋回飛行を行うとき、水平定常飛行の何倍の揚力が必要か（cos〇°が与えられる）",src:"出題"},{for:"バンク角を求める場合",fml:"cosφ=W/L",ex:"必要な揚力が水平定常飛行の〇倍のとき、バンク角は何°か",src:"変形"}]},
+  {term:"水平到達距離の計算", formula:"【公式】水平(到達)距離=速度×√((2×高度)/重力加速度)<br>　記号式：x=V×√(2h/g)　例：落下するまでの水平距離は何m<br>　①V=x/√(2h/g)　例：水平距離を〇mに抑える最高速度は何m/s<br>　②h=(x/V)²×g/2　例：水平距離を〇mに抑える高度は何m<br>※速度が大きいほど、水平距離は長くなる<br>※高度が高いほど、水平距離は長くなる",
+   cases:[{for:"水平到達距離を求める場合",fml:"x=V×√(2h/g)",ex:"高度〇mを速度〇m/sで飛行中に揚力を失って落下したとき、地上までの水平距離は何m（最も短いものを選ぶ型もある）",src:"出題"},{for:"速度を求める場合",fml:"V=x/√(2h/g)",ex:"高度〇mで、落下したときの水平距離を〇mに抑えたい。最高速度は何m/sを限度にすべきか",src:"出題"},{for:"高度を求める場合",fml:"(x/V)²=2h/g\nh=(x/V)²×g/2",ex:"最高速度〇m/sで、落下したときの水平距離を〇mに抑えたい。高度は何mを限度にすべきか",src:"出題"}]},
+  {term:"波長、フレネルゾーンの計算", formula:"【公式】波長=光速度(m/s)/周波数(Hz)<br>　記号式：λ=(3×10⁸)/(2.4×10⁹)=0.125m　例：〇GHzの波長は何m<br>　　※波長：0.125m → 12.5cm<br>　〇kHz=〇×10³Hz<br>　〇MHz=〇×10⁶Hz<br>　〇GHz=〇×10⁹Hz<br><br>【公式】フレネルゾーン半径=√((波長×半距離×半距離)/距離)<br>　記号式：R=√((λ×D1×D2)/D)<br>　①D1=D2=D/2(中心地点)　例：アンテナ間〇mの中心の半径は何m<br>　②必要なアンテナ高さ=R×0.6以上　例：半径の60%は何m<br>※波長が長い（周波数が低い）と半径は大きくなる<br>※距離が長いと半径は大きくなる<br>※D1=D2の時、半径は最大となる",
+   cases:[{for:"波長を求める場合",fml:"λ=c/f=(3×10⁸)/(2.4×10⁹)=0.125m(12.5cm)\n〇kHz=〇×10³Hz　〇MHz=〇×10⁶Hz　〇GHz=〇×10⁹Hz",ex:"〇GHzの電波の波長は何m（周波数をHzに直してから割る）",src:"出題"},{for:"フレネルゾーン半径を求める場合",fml:"R=√((λ×D1×D2)/D)\n中心地点は D1=D2=D/2（このとき半径は最大）",ex:"送受信アンテナ間〇m・使用周波数〇GHzのとき、中心地点のフレネルゾーン半径は何m（先にλ=c/fを出す）",src:"出題"},{for:"必要なアンテナの高さを求める場合",fml:"必要なアンテナ高さ=R×0.6以上\n※理想はR以上。地面も障害物になる",ex:"送受信アンテナ間〇m・〇GHzのとき、フレネルゾーン半径の60%は何m",src:"出題"}]},
+  {term:"バッテリーの計算", formula:"【公式】バッテリーの用語と求め方（教則 4.4）<br>　電圧(V)=セル当たりの電圧(V)×セル数<br>　　※リチウムポリマーバッテリーは1セル3.7V。例：3.7V×4セル=14.8V<br>　　※電圧降下=抵抗(Ω)×電流(A)<br>　出力(W)=放電時電圧(V)×電流(A)<br>　容量(Ah)=電流(A)×時間(h)<br>　エネルギー容量(Wh)=放電時電圧(V)×電流(A)×時間(h)<br>　充電率(%)=現時点で放電できる電気量(Ah)÷満充電時に放電できる電気量(Ah)<br>※容量(Ah)は使える「電気量」、エネルギー容量(Wh)は「仕事量」。混同しない<br>※出力を一定に保つと、電池残量が減る→放電時電圧が下がる→必要な電流は増える<br>※放電時の電流の大きさや温度によって、利用できる容量は変化する",
+   cases:[{for:"電圧を求める場合",fml:"電圧(V)=セル当たりの電圧(V)×セル数",ex:"1セル3.7V（リチウムポリマー）を4セルで構成したときの電圧は何V（3.7×4=14.8V）",src:"教則"},{for:"電圧降下を求める場合",fml:"電圧降下(V)=抵抗(Ω)×電流(A)",ex:"放電（飛行）中の電圧降下は何で決まるか（バッテリーの内部抵抗×電流）",src:"教則"},{for:"出力を求める場合",fml:"出力(W)=放電時電圧(V)×電流(A)",ex:"出力は何で求め、何を表すか（単位時間当たりのエネルギー量）",src:"教則"},{for:"容量(Ah)を求める場合",fml:"容量(Ah)=電流(A)×時間(h)",ex:"容量は何を表すか（満充電から終止電圧までに使える「電気量」。仕事量ではない）",src:"教則"},{for:"エネルギー容量(Wh)を求める場合",fml:"エネルギー容量(Wh)=放電時電圧(V)×電流(A)×時間(h)",ex:"エネルギー容量は何を表すか（こちらが「仕事量」。容量(Ah)の「電気量」と混同しない）",src:"教則"},{for:"充電率を求める場合",fml:"充電率(%)=現時点で放電できる電気量(Ah)÷満充電時に放電できる電気量(Ah)×100",ex:"充電率は何で求めるか（0%=仕様上の完全放電、100%=満充電）",src:"教則"}]},
 ];
 
 // ---------- 記号カード（表:記号 → 裏:意味） ----------
@@ -1429,7 +1445,7 @@ function nextQ(){
     let fmlBlock='';
     if(q.cat===5 && q.calc){
       const ci=FORMULA_CARDS.findIndex(c=>c.term.indexOf(q.calc)>=0);
-      if(ci>=0) fmlBlock=`<div class="formula" style="margin-top:10px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[ci].formula)}</div>`;
+      if(ci>=0) fmlBlock=`<div class="formula" style="margin-top:10px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[ci].formula)}${casesHTML(FORMULA_CARDS[ci])}</div>`;
     }
     $("#exp").innerHTML=`<div class="explain ${correct?'ok':'ng'}">
       <div class="res">${correct?'✓ 正解':'✗ 不正解'} — 正答は ${"ABCD"[v.ans]}</div>
@@ -1636,7 +1652,7 @@ function renderDeck(){
         </div>
         <div class="flash-face flash-back">
           <div class="tag" style="color:var(--acc2);text-align:center">${c.term}</div>
-          <div class="dformula">${fmlHTML(c.formula)}</div>
+          <div class="dformula">${fmlHTML(c.formula)}${casesHTML(c)}</div>
         </div>
       </div>
     </div>
@@ -1831,7 +1847,7 @@ function renderPuzzle(reset, toFb){
   let fb="";
   if(P.state==="ok"){
     fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
-      <div class="formula" style="margin-top:8px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[p.card].formula)}</div></div>
+      <div class="formula" style="margin-top:8px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[p.card].formula)}${casesHTML(FORMULA_CARDS[p.card])}</div></div>
       <div class="actions"><button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button></div>`;
   } else if(P.state==="ng"){
     fb=`<div class="explain ng" style="margin-top:14px"><div class="res">不正解</div>
@@ -2059,6 +2075,16 @@ function renderSymbolTable(){ calcTab="symbol"; renderCalc(); }
 //  CALC FORMULA SHEET
 // ============================================================
 function bindSup(str){ return str.replace(/(.)([²³⁸⁹]+)/g,'<span style="white-space:nowrap">$1$2</span>'); }
+// v95: カードの `cases`（求める値ごとの場合分け）をオレンジ枠で描画する
+function casesHTML(card){
+  if(!card || !card.cases || !card.cases.length) return "";
+  return `<div class="fcases">`+card.cases.map(function(c){
+    return `<div class="fcase"><div class="ft">${c.for}</div>`
+      + `<div class="fq">${bindSup(String(c.fml).split("\n").join("<br>"))}</div>`
+      + (c.ex ? `<div class="fe">例：${c.ex}</div>` : "")
+      + `</div>`;
+  }).join("")+`</div>`;
+}
 function fmlHTML(str){
   return String(str).split("<br>").map(function(ln){
     var depth=0, t0=ln;
@@ -2103,7 +2129,7 @@ function renderCalc(){
       <div class="explain" style="margin-bottom:16px">本番は計算5問。<b>2問以上の失点は致命的</b>です。試験画面の電卓は使用可、持込不可。各公式の逆算も併記。</div>`;
     for(const s2 of FORMULA_CARDS){
       h+=`<div class="ref-card"><h3>${s2.term}</h3>
-        <div class="formula">${fmlHTML(s2.formula)}</div>${s2.note?`<div class="note" style="margin-top:8px;color:var(--acc2)">${s2.note}</div>`:''}</div>`;
+        <div class="formula">${fmlHTML(s2.formula)}${casesHTML(s2)}</div>${s2.note?`<div class="note" style="margin-top:8px;color:var(--acc2)">${s2.note}</div>`:''}</div>`;
     }
     h+=`<button class="btn primary" style="margin-top:6px" onclick="startQuiz('cat',5)">計算問題を解く →</button>`;
   }
