@@ -355,8 +355,8 @@
 .puz-slots.ng .puz-slot{border-color:var(--bad)}
 .puz-slots.ng .puz-slot .pw,.puz-slots.ng .puz-slot .ps{color:var(--bad)}
 .puz-pool{display:flex;flex-wrap:wrap;gap:8px}
-.puz-pool.ops{gap:6px}
-.puz-pool.ops button{flex:1;min-width:0;padding:6px 2px}
+.puz-pool.ops{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.puz-pool.ops button{min-width:0;padding:6px 2px}
 .puz-cap{font-size:10.5px;font-weight:800;color:var(--sub);letter-spacing:.08em;margin:14px 2px 6px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif}
 .puz-pool button{min-height:46px;padding:6px 10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 .puz-pool button:disabled{opacity:.22}
@@ -1764,38 +1764,20 @@ const PUZ_DISTRACT = {
   8:["周波数(f)", "光速度(c)", "距離(D)", "波長(λ)", "速度(V)", "光速度(3×10⁸)", "周波数(2.4×10⁹)", "旋回半径(r)", "半距離(D1)", "半距離(D2)", "滑空距離(d)", "高度(h)", "速度²(V²)", "速度³(V³)", "回転角速度(ω)", "2×高度(2h)", "フレネルゾーン半径(R)", "水平到達距離(x)"],
 };
 // v85: 記号パレット。毎回この順で全部表示し、何度でも使える（答えのヒントにならない）
-const PUZ_OPS = ["(", ")", ")³", "√", "×", "÷", "+", "∝", "1"];
-// 固定表示の関係記号（選択式にしない）
-const PUZ_REL = ["＝"];
-const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
-const PUZ_GAP = 4;       // 同じ公式カードの出題を最低これだけ離す（v81）
+const PUZ_OPS = ["(", ")", ")³", "√", "×", "÷", "+", "∝", "＝", "1"];
+// v97: 固定表示する部品は無い（＝も∝も選択式）
+const PUZ_REL = [];
+// 単語プールの個数（カードによらず一定）
+const PUZ_POOL_N = 10;
 
-let P={i:0,list:[],pool:[],sel:[],state:"",firstTry:true,correct:0};
+let P={i:0,list:[],poolCard:null,pool:[],sel:[],state:"",firstTry:true,correct:0};
 
-// spaceOut は「残り問題数が多いカード」から並べるため先頭が偏る。
-// 間隔（gap）を保てる回転だけを候補にして、その中からランダムに回して先頭を散らす。
-function puzzRotate(list, gap){
-  const n=list.length, ok=[];
-  for(let k=0;k<n;k++){
-    const r=list.slice(k).concat(list.slice(0,k)), last=Object.create(null);
-    let good=true;
-    for(let i=0;i<n;i++){
-      const c=r[i].card;
-      if(last[c]!=null && i-last[c]<gap){ good=false; break; }
-      last[c]=i;
-    }
-    if(good) ok.push(k);
-  }
-  if(!ok.length) return list;
-  const k=ok[Math.floor(Math.random()*ok.length)];
-  return list.slice(k).concat(list.slice(0,k));
-}
 function startPuzzle(){
   clearInterval(Q.tInt);
-  // v81: 出題順をランダム化。同じ公式の変形が連続すると前問がヒントになるため、
-  //      同一カードの出題を最低 PUZ_GAP 問離す（他モードの spaceOut と同じ方式）。
-  P={i:0,list:puzzRotate(spaceOut(shuffle(PUZZLES.slice()), PUZ_GAP, p=>'card'+p.card), PUZ_GAP),
-     pool:[],sel:[],state:"",firstTry:true,correct:0};
+  // v97: 同じ公式カードの出題を続けて解く（基本式→パターン違い）。カードの順序だけシャッフルする。
+  const cards=shuffle([...new Set(PUZZLES.map(p=>p.card))]);
+  const list=[]; cards.forEach(c=>PUZZLES.forEach(p=>{ if(p.card===c) list.push(p); }));
+  P={i:0,list:list,poolCard:null,pool:[],sel:[],state:"",firstTry:true,correct:0};
   puzzSetup(); renderPuzzle(true);
 }
 // v83: ＝と∝は固定表示。それ以外（左辺の用語も含む）が選択式の部品。
@@ -1808,20 +1790,25 @@ function puzChip(t){
   return m ? `<span class="pw">${m[1]}</span><span class="ps">${m[2]}</span>` : `<span class="ps">${t}</span>`;
 }
 function puzzSetup(){
-  const p=P.list[P.i], ans=puzAns(p);
-  // v85: 記号（PUZ_OPS）は毎回すべて固定パレットで出し、何度でも使える。
-  //      よってプールに並べるのは「単語」だけ。重複も除くので使用回数のヒントも出ない。
-  const terms=[...new Set(ans.filter(puzIsTerm))];
-  const has=t=>terms.indexOf(t)>=0;
-  // 誤答は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、足りない分だけカード別プールから補う
-  const sib=[];
-  terms.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
-  const extra=shuffle(sib).slice(0, PUZ_EXTRA_N);
-  if(extra.length<PUZ_EXTRA_N){
-    const rest=(PUZ_DISTRACT[p.card]||[]).filter(t=>!has(t)&&extra.indexOf(t)<0);
-    extra.push(...shuffle(rest).slice(0, PUZ_EXTRA_N-extra.length));
+  const p=P.list[P.i];
+  // v97: プールは**カード単位**。同じカードの出題を続けて解く間は作り直さない（そのままの状態で次の型へ）。
+  //      個数は PUZ_POOL_N で固定なので、正解に使う部品の数が漏れない。
+  //      記号（PUZ_OPS）は毎回すべて固定パレットで出し、何度でも使える。
+  if(P.poolCard!==p.card){
+    const terms=[];
+    P.list.forEach(x=>{ if(x.card===p.card) puzAns(x).forEach(t=>{ if(puzIsTerm(t)&&terms.indexOf(t)<0) terms.push(t); }); });
+    const has=t=>terms.indexOf(t)>=0;
+    const need=Math.max(0, PUZ_POOL_N-terms.length);
+    // 誤答は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、足りない分だけカード別プールから補う
+    const sib=[];
+    terms.forEach(t=>(PUZ_SIB[t]||[]).forEach(x=>{ if(!has(x)&&sib.indexOf(x)<0) sib.push(x); }));
+    const extra=shuffle(sib).slice(0, need);
+    if(extra.length<need){
+      const rest=(PUZ_DISTRACT[p.card]||[]).filter(t=>!has(t)&&extra.indexOf(t)<0);
+      extra.push(...shuffle(rest).slice(0, need-extra.length));
+    }
+    P.pool=shuffle([...terms, ...extra]); P.poolCard=p.card;
   }
-  P.pool=shuffle([...terms, ...extra]);
   P.sel=[]; P.state=""; P.firstTry=true;
 }
 function renderPuzzle(reset, toFb){
@@ -1901,7 +1888,9 @@ function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzl
 function puzzRetry(){ P.sel=[]; P.state=""; renderPuzzle(); }
 function puzzNext(){
   if(P.i>=P.list.length-1){ renderPuzzleResult(); return; }
-  P.i++; puzzSetup(); renderPuzzle(true);
+  const prev=P.list[P.i].card;
+  P.i++; puzzSetup();
+  renderPuzzle(P.list[P.i].card!==prev);   // カードが変わるときだけ先頭へ戻す
 }
 function renderPuzzleResult(){
   Tview="puzzle";
