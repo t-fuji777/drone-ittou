@@ -786,7 +786,7 @@ const FORMULA_CARDS = [
   {term:"揚力の計算", formula:"【公式】機体重量=揚力∝空気密度×速度²<br>　記号式：W=L∝ρV²<br>　① V²=L /ρ　例：速度は何倍<br>　　V =±√(L /ρ)<br>　　V =√(L /ρ)"},
   {term:"推力の計算", formula:"【公式】機体重量=推力∝空気密度×回転角速度²<br>　記号式：W=T∝ρω²<br>　①ω²=T /ρ　例：何倍で〇高度でホバリング<br>　　ω =±√(T /ρ)<br>※ω(rad/s) ×√(T /ρ)=〇〇rad/s　例：改造後はrad/sでホバリング"},
   {term:"消費パワーの計算", formula:"【公式】消費パワー∝空気密度×回転角速度³∝推力×回転角速度<br>　記号式：P∝ρω³∝Tω<br>　①T  =ρ×ω²　例：ホバリングをするための消費パワーは何倍<br>　　ω²=T /ρ<br>　　ω =±√(T /ρ)<br>　　P  =ρ×√(T /ρ)³"},
-  {term:"旋回半径(バンク角)の計算", formula:"【公式】旋回半径=速度²÷(重力加速度×tan〇°)<br>　記号式：r=V²/g×tanφ<br>　①V²=r×g×tanφ　例：飛行機の速度は何s/m<br>　　V =±√（r×g×tanφ）<br>　　V =√（r×g×tanφ）<br>　②g×tanφ=V²/r　例：バンク角は何°<br>　　　tanφ=(V²/r)/g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる"},
+  {term:"旋回半径(バンク角)の計算", formula:"【公式】旋回半径=速度²÷(重力加速度×tan〇°)<br>　記号式：r=V²/(g×tanφ)<br>　①V²=r×g×tanφ　例：飛行機の速度は何s/m<br>　　V =±√（r×g×tanφ）<br>　　V =√（r×g×tanφ）<br>　②g×tanφ=V²/r　例：バンク角は何°<br>　　　tanφ=(V²/r)/g<br>※速度が大きいほど、旋回半径は大きくなる<br>※バンク角が大きいほど、旋回半径は小さくなる"},
   {term:"滑空距離の計算", formula:"【公式】滑空距離=高度×揚抗比<br>　記号式：d=h×(L/D)<br>　①h=d/(L/D)　例：エンジンを停止するタイミングは高度何m<br>※高度が高いと滑空距離は長くなる<br>※揚抗比が大きいと滑空距離は長くなる"},
   {term:"滑空角の計算", formula:"【公式】滑空角=1÷揚抗比<br>　記号式：tanφ=1/(L/D)<br>※揚抗比が大きいほど、滑空角は小さくなる"},
   {term:"定常旋回飛行の揚力の計算", formula:"【公式】定常旋回飛行の揚力=1/cosφ<br>※旋回するにはより大きな揚力が必要"},
@@ -1697,7 +1697,7 @@ const PUZZLES = [
   // ---- 波長・フレネルゾーン ----
   {name:"波長の計算", all:["波長(λ)", "＝", "光速度(c)", "÷", "周波数(f)"], card:8},
   {name:"波長の計算（2.4GHzの波長を求める）", all:["波長(λ)", "＝", "光速度(3×10⁸)", "÷", "周波数(2.4×10⁹)"], card:8},
-  {name:"フレネルゾーン半径の計算", all:["フレネルゾーン半径(r)", "＝", "√", "(", "波長(λ)", "×", "半距離(D1)", "×", "半距離(D2)", "÷", "距離(D)", ")"], card:8},
+  {name:"フレネルゾーン半径の計算", all:["フレネルゾーン半径(r)", "＝", "√", "(", "(", "波長(λ)", "×", "半距離(D1)", "×", "半距離(D2)", ")", "÷", "距離(D)", ")"], card:8},
 ];
 // v83: all は左辺＋＝/∝＋右辺の全体。＝と∝は固定表示、それ以外は選択式
 // v81: 部品は「文言(記号)」のセット表記。誤答部品は PUZ_SIB（正解部品と紛らわしい相手）を優先して抽出する
@@ -1746,9 +1746,9 @@ const PUZ_DISTRACT = {
   8:["周波数(f)", "光速度(c)", "距離(D)", "波長(λ)", "速度(V)", "光速度(3×10⁸)", "周波数(2.4×10⁹)", "旋回半径(r)", "半距離(D1)", "半距離(D2)", "滑空距離(d)", "高度(h)", "速度²(V²)", "速度³(V³)", "回転角速度(ω)", "2×高度(2h)", "フレネルゾーン半径(r)", "水平到達距離(x)"],
 };
 // v85: 記号パレット。毎回この順で全部表示し、何度でも使える（答えのヒントにならない）
-const PUZ_OPS = ["(", ")", ")³", "√", "×", "÷", "+", "1"];
+const PUZ_OPS = ["(", ")", ")³", "√", "×", "÷", "+", "∝", "1"];
 // 固定表示の関係記号（選択式にしない）
-const PUZ_REL = ["∝", "＝"];
+const PUZ_REL = ["＝"];
 const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
 const PUZ_GAP = 4;       // 同じ公式カードの出題を最低これだけ離す（v81）
 
@@ -1806,7 +1806,7 @@ function puzzSetup(){
   P.pool=shuffle([...terms, ...extra]);
   P.sel=[]; P.state=""; P.firstTry=true;
 }
-function renderPuzzle(reset){
+function renderPuzzle(reset, toFb){
   Tview="puzzle";
   const p=P.list[P.i], total=P.list.length, keep=main.scrollTop;   // reset は出題が切り替わるときだけ true
   // 解答欄は空スロットを出さない（部品数のヒントを与えない・v75）。
@@ -1852,6 +1852,18 @@ function renderPuzzle(reset){
       <button class="btn primary" style="flex:.9" onclick="puzzJudge()" ${(!P.sel.length||P.state)?'disabled':''}>判定する</button>
     </div>${fb}</div>`;
   main.innerHTML=h; main.scrollTop = reset ? 0 : keep; fitFH(main);
+  // 判定した直後は、結果と「次の公式 →」ができるだけ同時に見える位置までスクロールする
+  if(toFb){
+    const ex=main.querySelector('.explain'), acts=[...main.querySelectorAll('.actions')].pop();
+    if(ex){
+      const mr=main.getBoundingClientRect();
+      const toTop = ex.getBoundingClientRect().top - mr.top - 8;                       // 「正解」を上端に合わせる量
+      const toBtm = acts ? acts.getBoundingClientRect().bottom - mr.bottom + 14 : toTop; // ボタン下端を見せる量
+      // 結果の見出しが隠れない範囲（枠の内側余白16pxまで）で、できるだけボタンを見せる
+      const d = Math.min(toTop + 16, toBtm);
+      if(d > 0) main.scrollTop += d;
+    }
+  }
 }
 function puzzPick(src,k){
   if(P.state) return;
@@ -1865,7 +1877,7 @@ function puzzJudge(){
   const ok = got.length===ans.length && got.every((t,i)=>t===ans[i]);
   if(ok){ if(P.firstTry) P.correct++; P.state="ok"; }
   else { P.state="ng"; P.firstTry=false; }
-  renderPuzzle();
+  renderPuzzle(false, true);
 }
 function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzle(); }
 function puzzRetry(){ P.sel=[]; P.state=""; renderPuzzle(); }
