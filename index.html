@@ -1036,14 +1036,15 @@ function topicKey(q){
   if(q.calc) return 'calc:'+q.calc;
   return String(q.ref||'').replace(/（p\.\d+[^）]*）/g,'').trim() || ('id'+q.id);
 }
-function spaceOut(list, minGap){
+function spaceOut(list, minGap, keyFn){
   const gap = minGap==null ? TOPIC_GAP : minGap;
+  const key = keyFn || topicKey;                       // v81: 公式パズルはカード番号をキーにする
   const pool=list.slice(), out=[], lastAt=Object.create(null), remain=Object.create(null);
-  pool.forEach(q=>{ const k=topicKey(q); remain[k]=(remain[k]||0)+1; });
+  pool.forEach(q=>{ const k=key(q); remain[k]=(remain[k]||0)+1; });
   while(pool.length){
     let idx=-1, bestRemain=-1, fallback=0, bestAge=-1;
     for(let i=0;i<pool.length;i++){
-      const k=topicKey(pool[i]), la=lastAt[k];
+      const k=key(pool[i]), la=lastAt[k];
       const age = (la===undefined) ? Infinity : out.length-la;
       if(age>=gap){
         // 十分離れている候補のうち「残り問題数が多い論点」を優先（末尾で同一論点が固まるのを防ぐ）
@@ -1051,7 +1052,7 @@ function spaceOut(list, minGap){
       } else if(age>bestAge){ bestAge=age; fallback=i; }   // 全て近い場合は最も間隔が空くもの
     }
     if(idx<0) idx=fallback;
-    const q=pool.splice(idx,1)[0], k=topicKey(q);
+    const q=pool.splice(idx,1)[0], k=key(q);
     lastAt[k]=out.length; remain[k]--;
     out.push(q);
   }
@@ -1751,16 +1752,38 @@ const PUZ_DISTRACT = {
 // 演算子・数字の部品（左辺に出ていても誤答候補として使える）
 const PUZ_OPS = ["(", ")", ")³", "+", "1", "×", "÷", "√"];
 const PUZ_EXTRA_N = 6;   // 1問あたりの誤答部品数
+const PUZ_GAP = 4;       // 同じ公式カードの出題を最低これだけ離す（v81）
 
-let P={i:0,pool:[],sel:[],state:"",firstTry:true,correct:0};
+let P={i:0,list:[],pool:[],sel:[],state:"",firstTry:true,correct:0};
 
+// spaceOut は「残り問題数が多いカード」から並べるため先頭が偏る。
+// 間隔（gap）を保てる回転だけを候補にして、その中からランダムに回して先頭を散らす。
+function puzzRotate(list, gap){
+  const n=list.length, ok=[];
+  for(let k=0;k<n;k++){
+    const r=list.slice(k).concat(list.slice(0,k)), last=Object.create(null);
+    let good=true;
+    for(let i=0;i<n;i++){
+      const c=r[i].card;
+      if(last[c]!=null && i-last[c]<gap){ good=false; break; }
+      last[c]=i;
+    }
+    if(good) ok.push(k);
+  }
+  if(!ok.length) return list;
+  const k=ok[Math.floor(Math.random()*ok.length)];
+  return list.slice(k).concat(list.slice(0,k));
+}
 function startPuzzle(){
   clearInterval(Q.tInt);
-  P={i:0,pool:[],sel:[],state:"",firstTry:true,correct:0};
+  // v81: 出題順をランダム化。同じ公式の変形が連続すると前問がヒントになるため、
+  //      同一カードの出題を最低 PUZ_GAP 問離す（他モードの spaceOut と同じ方式）。
+  P={i:0,list:puzzRotate(spaceOut(shuffle(PUZZLES.slice()), PUZ_GAP, p=>'card'+p.card), PUZ_GAP),
+     pool:[],sel:[],state:"",firstTry:true,correct:0};
   puzzSetup(); renderPuzzle();
 }
 function puzzSetup(){
-  const p=PUZZLES[P.i];
+  const p=P.list[P.i];
   // v81: 誤答部品は「正解の部品と紛らわしいもの」（PUZ_SIB）を優先し、
   //      足りない分だけカード別プール（PUZ_DISTRACT）から補う。毎回ランダムに変わる。
   //      正解に使う部品と、左辺に出ている用語は誤答に含めない（演算子は除く）。
@@ -1777,7 +1800,7 @@ function puzzSetup(){
 }
 function renderPuzzle(){
   Tview="puzzle";
-  const p=PUZZLES[P.i], total=PUZZLES.length;
+  const p=P.list[P.i], total=P.list.length;
   // 解答欄は空スロットを出さない（部品数のヒントを与えない・v75）
   const slots = P.sel.length
     ? P.sel.map(k=>`<span class="puz-slot filled">${P.pool[k]}</span>`).join("")
@@ -1818,7 +1841,7 @@ function puzzPick(k){
 }
 function puzzJudge(){
   if(P.state||!P.sel.length) return;
-  const p=PUZZLES[P.i], got=P.sel.map(x=>P.pool[x]);
+  const p=P.list[P.i], got=P.sel.map(x=>P.pool[x]);
   const ok = got.length===p.tokens.length && got.every((t,i)=>t===p.tokens[i]);
   if(ok){ if(P.firstTry) P.correct++; P.state="ok"; }
   else { P.state="ng"; P.firstTry=false; }
@@ -1827,12 +1850,12 @@ function puzzJudge(){
 function puzzUndo(){ if(P.state||!P.sel.length) return; P.sel.pop(); renderPuzzle(); }
 function puzzRetry(){ P.sel=[]; P.state=""; renderPuzzle(); }
 function puzzNext(){
-  if(P.i>=PUZZLES.length-1){ renderPuzzleResult(); return; }
+  if(P.i>=P.list.length-1){ renderPuzzleResult(); return; }
   P.i++; puzzSetup(); renderPuzzle();
 }
 function renderPuzzleResult(){
   Tview="puzzle";
-  const total=PUZZLES.length;
+  const total=P.list.length||PUZZLES.length;
   let h=`<div class="screen result">
     <div class="big ${P.correct===total?'pass':'fail'}">${P.correct}<span style="font-size:20px;font-weight:800"> / ${total}</span></div>
     <div class="verdict">公式カード（選択式） 一巡完了</div>
