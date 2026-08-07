@@ -2233,7 +2233,7 @@ document.querySelectorAll("nav button").forEach(b=>{
 // ---------- PWA: Service Worker 登録 ----------
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
   });
 }
 

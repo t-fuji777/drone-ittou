@@ -1,6 +1,6 @@
 // 一等学科試験 暗記マスター - Service Worker
 // 更新が即反映されるよう、HTMLはネット優先（network-first）。
-const CACHE = 'ittou-gakka-v93';
+const CACHE = 'ittou-gakka-v94';
 
 const ASSETS = [
   './',
@@ -35,8 +35,11 @@ self.addEventListener('fetch', (e) => {
   const isHTML = req.mode === 'navigate' ||
                  (req.headers.get('accept') || '').includes('text/html');
   if (isHTML) {
+    // GitHub Pages は cache-control: max-age=600 を返すため、通常の fetch だと
+    // ブラウザのHTTPキャッシュから古い HTML が返り、更新が最大10分反映されない。
+    // cache:'reload' で必ずネットワークに取りに行く（失敗時はキャッシュにフォールバック）。
     e.respondWith(
-      fetch(req).then((res) => {
+      fetch(new Request(req.url, { cache: 'reload' })).then((res) => {
         if (res && res.ok) {  // エラーページ(404/500等)でオフライン用キャッシュを汚染しない
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));
