@@ -348,7 +348,8 @@
 .puz-slots.ok .puz-slot .pw,.puz-slots.ok .puz-slot .ps{color:var(--good)}
 .puz-slots.ng .puz-slot{border-color:var(--bad)}
 .puz-slots.ng .puz-slot .pw,.puz-slots.ng .puz-slot .ps{color:var(--bad)}
-.puz-pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.puz-pool{display:flex;flex-wrap:wrap;gap:8px}
+.puz-cap{font-size:10.5px;font-weight:800;color:var(--sub);letter-spacing:.08em;margin:14px 2px 6px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif}
 .puz-pool button{min-height:46px;padding:6px 10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 .puz-pool button:disabled{opacity:.22}
 .puz-pool button:active{transform:scale(.95)}
@@ -1793,6 +1794,8 @@ function startPuzzle(){
 }
 // v83: ＝と∝は固定表示。それ以外（左辺の用語も含む）が選択式の部品。
 const puzAns = p => p.all.filter(t=>PUZ_REL.indexOf(t)<0);
+// 「文言(記号)」のセット表記か（＝【単語】側）。演算子・数値リテラルは【記号】側になる
+const puzIsTerm = t => /^[^()]+\(.+\)$/.test(t);
 // v83: 部品は「文言(記号)」を上下2段に分けて表示する
 function puzChip(t){
   const m=/^([^()]+)\((.+)\)$/.exec(t);
@@ -1827,7 +1830,12 @@ function renderPuzzle(reset){
   // 正解の部品数を超えて選んだぶんも末尾に表示する（見えないと「正しい式なのに不正解」になり操作が効かないように見える）
   + P.sel.slice(f).map(k=>`<span class="puz-slot filled">${puzChip(P.pool[k])}</span>`).join("");
   const hint = P.sel.length ? "" : `<div class="puz-empty">下の部品をタップして式を組み立ててください</div>`;
-  const pool=P.pool.map((t,k)=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${puzChip(t)}</button>`).join("");
+  // v84: 部品は【記号】（演算子・数値）と【単語】（文言(記号)のセット）に上下で分けて並べる
+  const btn=k=>`<button onclick="puzzPick(${k})" ${(P.sel.includes(k)||P.state)?'disabled':''}>${puzChip(P.pool[k])}</button>`;
+  const idx=P.pool.map((t,k)=>k);
+  const gSym=idx.filter(k=>!puzIsTerm(P.pool[k])), gWord=idx.filter(k=>puzIsTerm(P.pool[k]));
+  const grp=(cap,ks)=>ks.length?`<div class="puz-cap">${cap}</div><div class="puz-pool">${ks.map(btn).join("")}</div>`:"";
+  const pool=grp("記号",gSym)+grp("単語",gWord);
   let fb="";
   if(P.state==="ok"){
     fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
@@ -1847,7 +1855,7 @@ function renderPuzzle(reset){
     <div class="qmini-bar"><i style="width:${P.i/total*100}%"></i></div>
     <div class="qcard"><div class="qnum">${p.name}</div>
       <div class="puz-slots ${P.state}">${slots}</div>${hint}</div>
-    <div class="puz-pool">${pool}</div>
+    ${pool}
     <div class="actions" style="margin-top:14px;gap:8px">
       <button class="btn ghost" style="flex:.55" onclick="puzzUndo()" ${(!P.sel.length||P.state)?'disabled':''}>1つ戻す</button>
       <button class="btn ghost" style="flex:.55" onclick="puzzRetry()" ${(!P.sel.length||P.state)?'disabled':''}>リセット</button>
