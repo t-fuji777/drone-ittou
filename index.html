@@ -286,6 +286,9 @@
 .calc-fab{position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;cursor:pointer;padding:0}
 .calc-fab:active{transform:scale(.93)}
 /* ---------- 公式カード（選択式）パズル ---------- */
+/* v103: 2問目以降に出す「前の問題で組み立てた公式」の参照 */
+.puz-ref-cap{font-size:10px;font-weight:700;color:var(--sub);margin:8px 0 4px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif}
+.puz-ref{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc2);border-radius:9px;padding:8px 10px;margin-bottom:11px;line-height:1.75;overflow-wrap:anywhere}
 .puz-slots{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px}
 .puz-slot{min-width:34px;min-height:42px;padding:5px 8px;border:1.5px dashed var(--line);border-radius:9px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 /* v83: 部品は上段＝文言、下段＝記号の2段表示 */
@@ -811,7 +814,7 @@ const SYMBOL_CARDS = [
 
 
 // ---------- Persistent state ----------
-const APP_VER="v102";   // 表示用。sw.js の const CACHE = 'ittou-gakka-vNN' と必ず揃える
+const APP_VER="v103";   // 表示用。sw.js の const CACHE = 'ittou-gakka-vNN' と必ず揃える
 const KEY="ittou_state_v1";
 let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{} };
 
@@ -1767,7 +1770,7 @@ function renderPuzzle(reset, toFb){
     <div class="qhead"><div class="qcount">${P.i+1}<small> / ${total}</small> <span style="font-size:11px;color:var(--sub);font-weight:600">公式カード（選択式）</span></div>
       <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
     <div class="qmini-bar"><i style="width:${P.i/total*100}%"></i></div>
-    <div class="qcard"><div class="qnum">${p.name}</div>
+    <div class="qcard"><div class="qnum">${p.name}</div>${puzRefHTML()}
       <div class="puz-slots ${P.state}">${slots}</div>${hint}</div>
     ${pool}
     <div class="actions" style="margin-top:14px;gap:8px">
@@ -1982,6 +1985,20 @@ function symbolTableHTML(){
 //  CALC FORMULA SHEET
 // ============================================================
 function bindSup(str){ return str.replace(/(.)([²³⁸⁹]+)/g,'<span style="white-space:nowrap">$1$2</span>'); }
+// v103: 同じカードの2問目以降は、**すでに組み立てた公式だけ**を参照として出す。
+//       まだ出題していない公式（例: 波長カードのフレネル）は出さないので、次問の答えは漏れない。
+function puzRefHTML(){
+  const p=P.list[P.i];
+  const blocks=String(FORMULA_CARDS[p.card].formula).split("<br><br>");   // 空行で区切られた公式ブロック
+  const done=[];
+  for(let k=0;k<P.i;k++){ if(P.list[k].card===p.card) done.push(P.list[k]); }
+  if(!done.length) return "";
+  const symOf=t=>{ const m=/\((.+)\)$/.exec(t); return m?m[1]:t; };
+  const blockOf=q=>{ const s=symOf(q.all[0]); const i=blocks.findIndex(b=>b.indexOf(s)>=0); return i<0?0:i; };
+  const want=[...new Set(done.map(blockOf))].sort((a,b)=>a-b);
+  return `<div class="puz-ref-cap">参考（前の問題で組み立てた公式）</div>
+    <div class="formula puz-ref">${fmlHTML(want.map(i=>blocks[i]).join("<br><br>"))}</div>`;
+}
 // v95: カードの `cases`（求める値ごとの場合分け）をオレンジ枠で描画する
 function casesHTML(card){
   if(!card || !card.cases || !card.cases.length) return "";
