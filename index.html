@@ -814,7 +814,7 @@ const SYMBOL_CARDS = [
 
 
 // ---------- Persistent state ----------
-const APP_VER="v103";   // 表示用。sw.js の const CACHE = 'ittou-gakka-vNN' と必ず揃える
+const APP_VER="v104";   // 表示用。sw.js の const CACHE = 'ittou-gakka-vNN' と必ず揃える
 const KEY="ittou_state_v1";
 let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{} };
 
@@ -1996,8 +1996,11 @@ function puzRefHTML(){
   const symOf=t=>{ const m=/\((.+)\)$/.exec(t); return m?m[1]:t; };
   const blockOf=q=>{ const s=symOf(q.all[0]); const i=blocks.findIndex(b=>b.indexOf(s)>=0); return i<0?0:i; };
   const want=[...new Set(done.map(blockOf))].sort((a,b)=>a-b);
+  // v104: 出すのは「記号式：」の行だけ（日本語の【公式】行と ※注記は出さない）
+  const lines=want.map(i=>blocks[i].split("<br>").filter(l=>l.indexOf("記号式：")>=0).join("<br>")).filter(Boolean);
+  if(!lines.length) return "";
   return `<div class="puz-ref-cap">参考（前の問題で組み立てた公式）</div>
-    <div class="formula puz-ref">${fmlHTML(want.map(i=>blocks[i]).join("<br><br>"))}</div>`;
+    <div class="formula puz-ref">${fmlHTML(lines.join("<br>"))}</div>`;
 }
 // v95: カードの `cases`（求める値ごとの場合分け）をオレンジ枠で描画する
 function casesHTML(card){
