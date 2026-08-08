@@ -1833,9 +1833,14 @@ function renderPuzzle(reset, toFb){
             +`<div class="puz-cap">単語</div><div class="puz-pool">${words}</div>`;
   let fb="";
   if(P.state==="ok"){
+    // v101: 同じカードの出題が続く間は公式カードを出さない（次の問題の答えが見えてしまうため）。
+    //       そのカードの最後の問題を解いたときにだけ全文を表示する。
+    const lastOfCard = P.i>=total-1 || P.list[P.i+1].card!==p.card;
+    // 公式カードは長いので、先に「次の公式 →」を置いて必ず見えるようにする
     fb=`<div class="explain ok" style="margin-top:14px"><div class="res">正解</div>
-      <div class="formula" style="margin-top:8px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[p.card].formula)}${casesHTML(FORMULA_CARDS[p.card])}</div></div>
-      <div class="actions"><button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button></div>`;
+      ${lastOfCard ? '' : `<div style="font-size:12px;color:var(--sub);margin-top:7px;line-height:1.6">同じ公式の別パターンが続きます。<br>公式カードはこのカードの最後にまとめて表示します。</div>`}
+      <div class="actions" style="margin-top:10px"><button class="btn primary" onclick="puzzNext()">${P.i>=total-1?'結果を見る':'次の公式 →'}</button></div>
+      ${lastOfCard ? `<div class="formula" style="margin-top:12px;background:var(--panel2);border-radius:10px;padding:10px 12px">${fmlHTML(FORMULA_CARDS[p.card].formula)}${casesHTML(FORMULA_CARDS[p.card])}</div>` : ''}</div>`;
   } else if(P.state==="ng"){
     fb=`<div class="explain ng" style="margin-top:14px"><div class="res">不正解</div>
       <div style="font-size:13px;margin-top:6px;line-height:1.7;overflow-wrap:anywhere">正しい式：${p.all.join(" ")}</div></div>
