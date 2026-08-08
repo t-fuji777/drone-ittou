@@ -70,7 +70,8 @@
   }
   .progbar{height:5px;background:var(--panel2);border-radius:4px;margin-top:12px;overflow:hidden}
   .progbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px;width:0;transition:width .5s cubic-bezier(.4,0,.2,1)}
-  .prog-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-top:6px;font-weight:500}
+  .ver{font-size:10px;font-weight:700;color:var(--sub);margin-left:6px;letter-spacing:.02em;vertical-align:2px}
+.prog-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-top:6px;font-weight:500}
 
   /* ---------- Scroll body ---------- */
   main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:30px 16px calc(128px + env(safe-area-inset-bottom))} /* 下パディングは電卓FAB(66+52px)より深く取り、最下部コンテンツが隠れないようにする */
@@ -172,37 +173,8 @@
   .explain .formula .fh,.explain .formula .fl{overflow-wrap:anywhere;word-break:normal}
 
   /* ---------- Flashcard ---------- */
-  .flash{perspective:1600px;margin-bottom:16px}
-  .flash-inner{position:relative;width:100%;min-height:420px;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
-  .flash.flipped .flash-inner{transform:rotateY(180deg)}
-  .flash-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-    border:1px solid var(--line);border-radius:18px;padding:20px 18px 44px;display:flex;flex-direction:column;
-    justify-content:flex-start;box-shadow:var(--shadow);overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .flash-face::-webkit-scrollbar{width:0}
-  .flash-front{background:linear-gradient(150deg,var(--panel),var(--panel2))}
-  .flash-back{background:linear-gradient(150deg,#15263a,var(--panel2));transform:rotateY(180deg)}
-  .flash .tag{font-size:10px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px;text-align:center;flex:none}
-  .flash .fq{font-size:15px;font-weight:700;line-height:1.55;margin-bottom:14px}
-  .flash .a{font-size:13px;line-height:1.65;font-weight:500;color:var(--ink)}
-  .flash .fopts{display:flex;flex-direction:column;gap:8px}
-  .flash .fopt{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;line-height:1.45;font-weight:500;
-    border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:rgba(0,0,0,.15)}
-  .flash .fk{width:19px;height:19px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);
-    display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;color:var(--sub);margin-top:1px}
-  .flash .fopt.fok{border-color:var(--good);background:rgba(61,220,132,.14)}
-  .flash .fk.fkok{background:var(--good);color:#04140a;border-color:var(--good)}
-  .flash .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
-  .flash .dformula{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc2);
-    border-radius:10px;padding:14px 14px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:14px;letter-spacing:0;font-weight:600;
-    color:var(--acc2);margin-bottom:14px;line-height:1.9;text-align:left;overflow-wrap:anywhere}
-  .flash .dmean{font-size:18px;font-weight:700;line-height:1.5;text-align:center;color:var(--ink);margin-bottom:12px}
-  .flash .dunit{font-size:13px;color:var(--acc);text-align:center;font-weight:600;
-    border-top:1px dashed var(--line);padding-top:11px}
   /* デッキ（公式/記号カード） */
   .deck-screen{display:flex;flex-direction:column;height:100%}
-  .deck-flash{flex:1 1 auto;min-height:200px;max-height:420px;margin-bottom:12px}
-  .deck-flash .flash-inner{height:100%;min-height:0}
-  .deck-flash .flash-face{padding:18px}
   /* 記号一覧テーブル */
   .symtable-wrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
   .symtable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--panel)}
@@ -246,6 +218,16 @@
   /* ---------- Calc reference ---------- */
   .ref-card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px}
 /* v95: 「◯◯を求める場合」を公式の下にオレンジ枠で独立表示する */
+/* 公式カード本文の行スタイル（v102: めくり暗記の .dformula を廃止したので .formula のみ） */
+.formula .fl{overflow-wrap:anywhere;word-break:normal;line-height:1.95}
+.formula .fn{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.5;letter-spacing:0;overflow-wrap:anywhere;word-break:normal;margin-top:1px}
+.formula .fh{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.65;word-break:normal;overflow-wrap:anywhere;margin-bottom:1px}
+.formula .fl{font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.formula .fn{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.55;word-break:normal;overflow-wrap:anywhere;margin-top:2px}
+.formula .d0{padding-left:0}
+.formula .d1{padding-left:1.6em}
+.formula .d2{padding-left:3.0em}
+.formula .d3{padding-left:4.4em}
 .fcases{margin-top:11px;display:flex;flex-direction:column;gap:8px}
 .fcase{border:1px solid var(--acc2);border-left:3px solid var(--acc2);border-radius:10px;padding:9px 11px;background:rgba(255,182,39,.06)}
 .fcase .ft{font-size:11px;font-weight:800;color:var(--acc2);margin-bottom:5px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;overflow-wrap:anywhere}
@@ -294,18 +276,8 @@
 .calc-keys button{padding:14px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;font-size:17px;font-weight:700;cursor:pointer}
 .calc-keys button:active{background:var(--acc);color:#04201c}
 .calc-keys .calc-eq{background:var(--acc);color:#04201c;border-color:var(--acc)}
-.formula .fl,.dformula .fl{overflow-wrap:anywhere;word-break:normal;line-height:1.95}
-.formula .fn,.dformula .fn{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.5;letter-spacing:0;overflow-wrap:anywhere;word-break:normal;margin-top:1px}
-.formula .fg,.dformula .fg{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.5;overflow-wrap:anywhere;word-break:normal;margin-top:8px}
 .fex{color:var(--ink);font-size:11px;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif;letter-spacing:0}
-.formula .fh,.dformula .fh{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:12.5px;font-weight:700;color:var(--acc2);line-height:1.65;word-break:normal;overflow-wrap:anywhere;margin-bottom:1px}
-.formula .fl,.dformula .fl{font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
-.formula .fn,.dformula .fn{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--sub);line-height:1.55;word-break:normal;overflow-wrap:anywhere;margin-top:2px}
 .fex{color:var(--ink);font-size:11px;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;word-break:normal;overflow-wrap:anywhere}
-.formula .d0,.dformula .d0{padding-left:0}
-.formula .d1,.dformula .d1{padding-left:1.6em}
-.formula .d2,.dformula .d2{padding-left:3.0em}
-.formula .d3,.dformula .d3{padding-left:4.4em}
 .calc-modal-ov{position:fixed;inset:0;background:rgba(4,8,16,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
 .calc-modal{width:100%;max-width:300px;background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 12px 44px rgba(0,0,0,.55)}
 .calc-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--ink);font-weight:700;font-size:15px}
@@ -378,7 +350,7 @@
       <div class="logo">
         <img class="mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9IiMxYTI0MzgiLz4KICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQxNDIyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8IS0tIDQgcHJvcGVsbGVyIHJpbmdzIC0tPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlmYjBjNCIgc3Ryb2tlLXdpZHRoPSIzLjIiPgogICAgPGNpcmNsZSBjeD0iMjciIGN5PSIyNyIgcj0iMTMiLz4KICAgIDxjaXJjbGUgY3g9IjczIiBjeT0iMjciIHI9IjEzIi8+CiAgICA8Y2lyY2xlIGN4PSIyNyIgY3k9IjczIiByPSIxMyIvPgogICAgPGNpcmNsZSBjeD0iNzMiIGN5PSI3MyIgcj0iMTMiLz4KICA8L2c+CiAgPCEtLSBhcm1zIChYKSAtLT4KICA8ZyBzdHJva2U9IiMzYTRhNjMiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxsaW5lIHgxPSIzNCIgeTE9IjM0IiB4Mj0iNjYiIHkyPSI2NiIvPgogICAgPGxpbmUgeDE9IjY2IiB5MT0iMzQiIHgyPSIzNCIgeTI9IjY2Ii8+CiAgPC9nPgogIDwhLS0gY2VudGVyIGJvZHkgLS0+CiAgPHJlY3QgeD0iMzgiIHk9IjM4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHJ4PSI1IiBmaWxsPSIjYzRjZWRkIiBzdHJva2U9IiM5ZmIwYzQiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPCEtLSBnb2xkIDEgLS0+CiAgPHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iR2VvcmdpYSwgJ1RpbWVzIE5ldyBSb21hbicsIHNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Q0YWYzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPjE8L3RleHQ+Cjwvc3ZnPgo=" alt="アプリアイコン">
         <div>
-          <h1>一等学科 暗記マスター</h1>
+          <h1>一等学科 暗記マスター<span class="ver" id="appVer"></span></h1>
           <div class="sub">教則第5版準拠 / 一等無人航空機操縦士</div>
         </div>
       </div>
@@ -839,6 +811,7 @@ const SYMBOL_CARDS = [
 
 
 // ---------- Persistent state ----------
+const APP_VER="v102";   // 表示用。sw.js の const CACHE = 'ittou-gakka-vNN' と必ず揃える
 const KEY="ittou_state_v1";
 let S = { known:{}, wrong:{}, seen:{}, streak:0, lastDay:null, history:[], attempts:{}, cs:{}, daily:{}, box:{}, due:{} };
 
@@ -943,6 +916,7 @@ function refreshHeader(){
   $("#progPct").textContent=pct+"%";
   $("#streakN").textContent=S.streak||0;
   const tn=$("#todayN"); if(tn) tn.textContent=(S.daily[new Date().toDateString()]||{n:0}).n;
+  const av=$("#appVer"); if(av) av.textContent=APP_VER;
 }
 
 // ============================================================
@@ -964,20 +938,14 @@ function renderHome(){
 
   // 学習モード（ランダムに暗記・即時フィードバック・三択CBT）
   h+=`<div class="sec-title">学習モード（ランダムに暗記）</div><div class="modes">`;
-  h+=`<button class="mode-btn full" onclick="startQuiz('quick')"><span class="e" style="font-weight:900;font-size:15px">10</span><b>クイック10問</b><span>弱点優先で10問だけ・スキマ時間に</span></button>`;
   h+=`<button class="mode-btn full" onclick="startQuiz('learn')"><span class="e">📚</span><b>ランダムに学習（全${BANK.length}問）</b><span>全問からランダムに出題・1問ずつ正誤と解説・三択</span></button>`;
   h+=`<button class="mode-btn full" onclick="learnChapterMenu()"><span class="e">🗂️</span><b>章を選んで学習</b><span>章ごとにランダムに暗記</span></button>`;
+  h+=`<button class="mode-btn full" onclick="startPuzzle()"><span class="e">${PUZ_ICON}</span><b>公式カード（選択式）</b><span>部品を選んで計算公式を組み立てる・全${PUZZLES.length}問</span></button>`;
   h+=`</div>`;
 
   // 試験モード（本番想定）
   h+=`<div class="sec-title">試験モード（本番想定）</div><div class="modes">`;
   h+=`<button class="mode-btn full" onclick="startQuiz('mock')"><span class="e">📝</span><b>模擬試験 70問</b><span>二等相当50＋一等15＋計算5・三肢択一（本番形式）・75分</span></button>`;
-  h+=`</div>`;
-
-  // 計算カード
-  h+=`<div class="sec-title">計算の暗記</div><div class="modes">`;
-  h+=`<button class="mode-btn" onclick="startDeck()"><span class="e" style="font-weight:900">⇄</span><b>公式カード（めくり暗記）</b><span>名称→タップで公式・全${FORMULA_CARDS.length}枚</span></button>`;
-  h+=`<button class="mode-btn" onclick="startPuzzle()"><span class="e" style="font-family:'Courier New',monospace;font-weight:900">√</span><b>公式カード（選択式）</b><span>部品を選んで公式を組み立てる・全${PUZZLES.length}問</span></button>`;
   h+=`</div>`;
 
   main.innerHTML=h; main.scrollTop=0; refreshHeader();
@@ -1042,7 +1010,7 @@ function resumeSession(){
 }
 function resumeCardHTML(){
   const s=S.session, total=s.ids.length, pos=Math.min((s.i||0)+1,total);
-  const ml={learn:"学習モード",cat:"分野別演習",review:"復習",mock:"模擬試験",quick:"クイック10問",due:"今日の復習"}[s.mode]||"演習";
+  const ml={learn:"学習モード",cat:"分野別演習",review:"復習",mock:"模擬試験",due:"今日の復習"}[s.mode]||"演習";
   const prog=s.mock ? `解答済 ${(s.ansSel||[]).filter(x=>x!=null).length} / ${total}問` : `${pos} / ${total}問まで進行（正解 ${s.correct||0}）`;
   return `<div class="ref-card" style="border:1px solid var(--acc);margin-bottom:14px">
     <h3 style="color:var(--ink);font-size:13px">中断した${ml}があります</h3>
@@ -1113,12 +1081,6 @@ function startQuiz(mode,cat){
   else if(mode==="cat"){ list=shuffle(byCat(cat)); }
   else if(mode==="review"){ list=shuffle(BANK.filter(q=>S.wrong[q.id])); }
   else if(mode==="learn"){ list=shuffle(learnList(cat)); learn=true; } // cat=null:全章 / 数値:その章。v68でランダム出題に変更
-  else if(mode==="quick"){
-    // クイック10問（v70）: 要復習 > 未定着(seen&&!known) > 未見 > 習得済み の優先度、同グループ内は挑戦回数昇順
-    const pri=q=> S.wrong[q.id]?0 : (S.seen[q.id]&&!S.known[q.id])?1 : !S.seen[q.id]?2 : 3;
-    list=shuffle(BANK).sort((a,b)=>pri(a)-pri(b)||(S.attempts[a.id]||0)-(S.attempts[b.id]||0)).slice(0,10);
-    learn=true;
-  }
   else if(mode==="due"){
     // 今日の復習（Leitner・v70／v72で上限＋分野バランス）
     list=dueToday();
@@ -1474,7 +1436,7 @@ function finishQuiz(){
   if(Q.mock){ finishMock(); return; }   // v70: 模試は一括採点（本番CBT形式）
   const total=Q.list.length, correct=Q.correct, wrong=total-correct;
   const pct=Math.round(correct/total*100);
-  // 学習系（learn/quick/due）は合否でなく「一巡完了」として表示
+  // 学習系（learn/due）は合否でなく「一巡完了」として表示
   if(Q.learn){
     S.history.push({t:Date.now(),mode:Q.mode,total,correct,pct,mock:false});
     if(S.history.length>50) S.history=S.history.slice(-50);
@@ -1628,56 +1590,6 @@ function reviewThese(){
 }
 
 // ============================================================
-//  公式カード（めくり暗記）: 表=名称 → タップでめくって裏=公式（v69で復活）
-// ============================================================
-let D={list:[],i:0,flipped:false};
-function startDeck(){
-  clearInterval(Q.tInt);
-  D={list:shuffle(FORMULA_CARDS),i:0,flipped:false};
-  renderDeck();
-}
-function renderDeck(){
-  Tview="deck";
-  const c=D.list[D.i];
-  let h=`<div class="screen deck-screen">
-    <div class="qhead"><div class="qcount">${D.i+1}<small> / ${D.list.length}</small> <span style="font-size:11px;color:var(--sub);font-weight:600">公式カード（めくり暗記）</span></div>
-      <button class="btn ghost" style="flex:none;padding:9px 14px;font-size:12px" onclick="renderHome();setNavActive('home')">終了</button></div>
-    <div class="qmini-bar"><i style="width:${(D.i+1)/D.list.length*100}%"></i></div>
-    <div class="flash deck-flash ${D.flipped?'flipped':''}" id="flash" onclick="flipDeck()">
-      <div class="flash-inner">
-        <div class="flash-face flash-front" style="justify-content:center;text-align:center">
-          <div class="tag">公式カード</div>
-          <div style="font-size:22px;font-weight:900;line-height:1.3">${c.term}</div>
-          <div class="hint">タップで公式を表示</div>
-        </div>
-        <div class="flash-face flash-back">
-          <div class="tag" style="color:var(--acc2);text-align:center">${c.term}</div>
-          <div class="dformula">${fmlHTML(c.formula)}${casesHTML(c)}</div>
-        </div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn ghost" onclick="prevDeck()" ${D.i===0?'disabled':''}>← 前</button>
-      <button class="btn primary" onclick="nextDeck()">${D.i>=D.list.length-1?'最初に戻る ↻':'次へ →'}</button>
-    </div></div>`;
-  main.innerHTML=h; main.scrollTop=0; fitFH(main);
-}
-function flipDeck(){ D.flipped=!D.flipped; $("#flash").classList.toggle("flipped",D.flipped); }
-function nextDeck(){
-  if(D.i+1 >= D.list.length){
-    // 一周したら再シャッフル（直前のカードが先頭に来ないように）
-    const last = D.list[D.i];
-    let next = shuffle(D.list);
-    if(next.length>1 && next[0]===last){ [next[0],next[next.length-1]]=[next[next.length-1],next[0]]; }
-    D.list = next; D.i = 0;
-  } else {
-    D.i++;
-  }
-  D.flipped=false; renderDeck();
-}
-function prevDeck(){ if(D.i>0){ D.i--; D.flipped=false; renderDeck(); } }
-
-// ============================================================
 //  公式カード（選択式）: 数式の部品を選んで公式を組み立てるパズル（v65、v75で難化）
 //  tokens=正解の部品列（順序込み）／card=正解時に全文表示する FORMULA_CARDS の index
 //  v75: (1) 同じ公式の日本語式・記号式・逆算式（変形式）を別問として収録
@@ -1770,6 +1682,8 @@ const PUZ_REL = [];
 // 単語プールの個数（カードによらず一定）
 const PUZ_POOL_N = 10;
 
+// ホームの公式カード（選択式）アイコン（部品を並べて式を組み立てるイメージ・SVG）
+const PUZ_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="6.5" height="8" rx="1.6"/><path d="M11.5 12h3"/><rect x="17" y="8" width="4.5" height="8" rx="1.6"/></svg>`;
 let P={i:0,list:[],poolCard:null,pool:[],sel:[],state:"",firstTry:true,correct:0};
 
 function startPuzzle(){
@@ -2063,7 +1977,6 @@ function symbolTableHTML(){
       <tbody>${rows}</tbody>
     </table></div>`;
 }
-function renderSymbolTable(){ calcTab="symbol"; renderCalc(); }
 
 // ============================================================
 //  CALC FORMULA SHEET
